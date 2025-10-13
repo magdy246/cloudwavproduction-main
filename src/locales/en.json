@@ -1,0 +1,987 @@
+{
+  "login": "Login",
+  "SignUp": "Sign Up",
+  "username": "Username",
+  "forgetPassword": "Forgot Password?",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "submit": "Submit",
+  "birthDate": "Birth Date",
+  "loginTitle": "Hi, Welcome Back Fellas!",
+  "emailAddress": "Email Address",
+  "enterYourName": "Enter Your Name",
+  "or": "OR",
+  "signUpIntro1": "Our Members ",
+  "signUpIntro2": "are   Around the World",
+  "signUpSubTitle": "Over 5,000 Singer join us monthly",
+  "fullName": "full Name",
+  "intro": "Unleash Your soundworld is tuned in",
+  "subIntro": "Try it and see the difference",
+  "orSignInWith": "Or sign in with",
+  "dontHaveAccount": "You don't Have an Account?",
+  "Home": "Home",
+  "joinus": "Join Us",
+  "emailOrUsername": "Email or username",
+  "service": "Services",
+  "pricing": "Pricing",
+  "faqs": "FAQs",
+  "videos": "Videos",
+  "aboutus": "About Us",
+  "contactus": "Contact",
+  "playing": "Start Playing",
+  "joinush": "Join Us and Take Your Music Career to the Next Level!",
+  "joinusp": "Are you an aspiring artist or an established star looking for a platform to support your journey and expand your reach? We are here to be your trusted partner and agent for success!",
+  "joinNow": "Join Us Now",
+  "policyf": "policy",
+  "joinus1": "Good Exclusive Features",
+  "joinus1p": "We provide cutting-edge advertising solutions and exclusive tools, including AI-driven strategies and modern promotional",
+  "joinus2": "Artist Support",
+  "joinus2p": "Our 24/7 support ensures you're never alone. We provide multiple channels for assistance, including email and WhatsApp, to address all your needs.",
+  "joinus3": "Platforms Management",
+  "joinus3p": "We professionally manage your platforms, ensuring seamless operations and growth throughout the contract period.",
+  "joinus4": "Earnings and Copyright Protection",
+  "joinus4p": "We protect your content, secure your rights, and ensure you receive your earnings.",
+  "Satisfy_Solution": "Satisfy Solution",
+  "Satisfy_Solutionp": "The Best Services we provide",
+  "services_1": "Music distribution",
+  "services_1p": "We ensure your music reaches the right audience, wherever they are in the world.",
+  "services_2": "Platform Management",
+  "services_2p": "Seamlessly upload your tracks, albums, and visuals to all major platforms.",
+  "services_3": "Social media",
+  "services_3p": "Creative posts and stories that showcase your style and connect with fans.",
+  "services_4": "Clothes Store",
+  "services_4p": "Shop trendy, high-quality fashion with fast delivery and easy returns.",
+  "services_5": "Programming services",
+  "services_5p": "Expert web, app, and software development tailored to your needs.",
+  "services_6": "TikTok agency",
+  "services_6p": "Easily share your content and campaigns on TikTok to reach your fans",
+  "Personalized": "Personalized videos from your favorite stars",
+  "Order_now": "Order Now",
+  "Reviews": "Reviews",
+
+  "Actors": "Actors",
+  "Musicians": "Musicians",
+  "Content_creators": "Content Creators",
+  "youtubers": "Youtubers",
+  "Athletes": "Athletes",
+  "Personal_video": "Personal video",
+  "Business_Work": "Business Work",
+  "Your_name": "Your Name",
+  "Your_email": "Your Email",
+  "Your_Number": "Your Number",
+  "Write_your_Text": "Write your text",
+  "accept": "Agree with",
+  "terms": "Terms and Conditions",
+  "Send_Now": "Send Now",
+  "Personal_video_price": "Personal video price",
+  "Business_video_price": "Business video price",
+  "Artist_Division": "Artist Division",
+  "Select_Division": "Select Division",
+  "Mahraganat": "Mahraganat",
+  "Rap": "Rap",
+  "Pop": "Pop",
+  "Jazz": "Jazz",
+  "Rock": "Rock",
+  "Social_media_links": "Social media links",
+  "Your_Image": "Your Image",
+  "We_want_proof_of_identity": "We want proof of identity",
+  "learn_more": "Learn More",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_use": "Terms of Use",
+  "cookie_settings": "Cookie Settings",
+  "contact_us": "Contact Us",
+  "office": "Office",
+  "social": "Social",
+  "all_rights_reserved": "All Rights Reserved",
+  "order_now": "Order Now",
+  "personal_video": "Personal Video",
+  "business_video": "Business Work",
+  "average_video_price": "Average video price",
+  "get_started": "Get Started",
+  "yearly_price": "or ${{price}} yearly",
+  "basic_plan": "Basic Plan",
+  "standard_plan": "Standard Plan",
+  "premium_plan": "Premium Plan",
+  "feature1": "Unlimited Storage",
+  "feature2": "24/7 Support",
+  "feature3": "Advanced Analytics",
+  "pricing_title": "Pricing Plan",
+  "pricing_subtitle": "Choose the perfect plan that fits your needs, and unlock the full potential of your career right now",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "free_plan": "Free Plan",
+  "pro_plan": "Pro Plan",
+  "enterprise_plan": "Enterprise Plan",
+  "feature_1": "5 songs and profiles",
+  "feature_2": "Basic analytics",
+  "feature_3": "Standard support",
+  "feature_4": "25 songs and profiles",
+  "feature_5": "Advanced analytics",
+  "feature_6": "Priority support",
+  "feature_7": "Unlimited songs and profiles",
+  "feature_8": "Custom analytics and reporting",
+  "feature_9": "Dedicated account manager",
+  "feature_10": "Exclusive webinars",
+  "feature_11": "Personalized recommendations",
+  "music_platform": "The music platform",
+  "join_our_platform": "Join Our Platform!",
+  "platform_description": "Our platform helps singers create profiles, share their songs, and connect with fans worldwide to elevate their careers.",
+  "join_now": "Join us now",
+  "playing_alt": "Playing music image",
+  "browse": "Browse",
+  "home": "Home",
+  "genress": "Genres",
+  "all_genres": "All Genres",
+  "musicDistributionOptions": {
+    "voiceRecording": "voice recording",
+    "songWriting": "songwriting",
+    "musicProduction": "music production",
+    "musicVideo": "music video",
+    "songCreation": "song creation",
+    "songClip": "song clip"
+  },
+  "Trending_songs": "Trending Songs",
+  "Trending_Albums": "Trending Albums",
+  "Recently_Supported": "Recently Supported",
+  "Recently_Added": "Recently Added",
+  "Accounts_for_You": "Accounts for You",
+  "Hip_hop": "Hip Hop",
+  "Electronic": "Electronic",
+  "Classical": "Classical",
+  "Mheraganat": "Mheraganat",
+  "Upload": "Upload",
+  "Play": "Play",
+  "Processing": "Processing...",
+  "Following": "Following",
+  "Follow": "Follow",
+  "contact": {
+    "title": "Contact Us",
+    "header": "Contact Information",
+    "subHeader": "Say something to start a live chat!",
+    "address": "22 Al-Sawah Street, Zeitoun, Cairo, Egypt.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "sendButton": "Send Message",
+    "Phone": "Phone Number",
+    "Email": "Email"
+  },
+  "validation": {
+    "name_required": "Name is required.",
+    "name_min": "Name must be at least 3 characters.",
+    "name_max": "Name must not exceed 20 characters.",
+    "email_required": "Email is required.",
+    "email_min": "Email must be at least 5 characters.",
+    "email_invalid": "Invalid email address.",
+    "message_required": "Message is required.",
+    "message_min": "Message must be at least 10 characters.",
+    "message_max": "Message must not exceed 500 characters.",
+    "phone_required": "Phone number is required.",
+    "whatsapp_number_required": "WhatsApp number is required.",
+    "platform_required": "Platform is required.",
+    "social_media_account_required": "Social media account is required.",
+    "details_required": "Details are required.",
+    "options_min": "Select at least one option.",
+    "minLength": "Email must be at least 15 characters.",
+    "correctEmail": "Please enter a valid email address.",
+    "password": "Must have At least 8 character",
+    "required": "This field is required.",
+    "options_required": "Select one or more options.",
+    "validPhone": "Check the phone number",
+    "onlyNumbers": "Must contain only numbers.",
+    "confirmPassword": "The password not the same of confirm password"
+  },
+  "errors": {
+    "title": "Error!",
+    "default": "Something went wrong. Please try again.",
+    "noResponse": "No response from server. Check your connection.",
+    "requestError": "Request error:",
+    "emailTaken": "The Email Has Been Taken",
+    "name_required": "Name is required.",
+    "name_min": "Name must be at least 3 characters.",
+    "name_max": "Name must not exceed 20 characters.",
+    "email_required": "Email is required.",
+    "email_invalid": "Invalid email address.",
+    "phone_required": "Phone number is required.",
+    "phone_invalid": "Invalid phone number.",
+    "platform_required": "Platform is required.",
+    "details_min": "Details must be at least 10 characters.",
+    "details_max": "Details must not exceed 500 characters."
+  },
+  "faq_title": "Frequently Asked Questions (FAQ) – CloudWav Production",
+  "faq_questions": "(For advertising, clothing, cross-site sales, social media services, artistic and music production, platform management, and professional video services.)",
+  "faq": {
+    "q1": "What is CloudWav Production?",
+    "a1": "CloudWav Production is a digital platform that provides professional services including advertising, clothing, sales through other websites, social media services, artistic and music production, platform management, and professional video services. We offer comprehensive solutions for individuals and businesses to enhance their digital presence and achieve their creative and commercial goals.",
+    "q2": "How can I create an account on the website?",
+    "a2": [
+      "Click the 'Sign Up' button on the homepage.",
+      "Enter your basic information such as email and password.",
+      "Choose the account type (Rising Artist, Famous Artist, Regular User).",
+      "Agree to the Terms and Conditions.",
+      "Verify your account via the confirmation email sent to you.",
+      "After registration, you can manage your profile, request services, and interact with available content on the platform."
+    ],
+    "q3": "How does the artist account work on the platform?",
+    "a3": [
+      "The artist account allows you to",
+      "Upload and manage your songs on digital streaming platforms.",
+      "Receive musical and artistic support and production based on available plans.",
+      "Offer paid video services such as advertisements and dedications.",
+      "Receive event and concert offers through the website.",
+      "",
+      ""
+    ],
+    "q4": "How can I request a dedication video or advertisement from an artist?",
+    "a4": [
+      "Browse the list of available artists in the 'Paid Videos' section.",
+      "Select the artist you wish to request a video from.",
+      "Choose the type of video (Advertisement, Personal Dedication, Greeting, Product Promotion).",
+      "Add the required details such as name, message, and specific instructions.",
+      "Complete the payment process, and your request will be fulfilled within the specified time."
+    ],
+    "q5": "Can I book an artist for an event or occasion?",
+    "a5": [
+      "Browse the list of available artists for events.",
+      "Select the type of event (Wedding, Festival, Private Party, Commercial Advertisement).",
+      "Submit a booking request including the location, date, and required technical details.",
+      "You will be contacted to confirm availability and finalize the pricing."
+    ],
+    "q6": "How can I benefit from artistic and music production services?",
+    "a6": [
+      "Select the 'Artistic Production' service from the main menu.",
+      "Choose the type of work required (Song, Music Video, Editing, Music Distribution).",
+      "Submit project details such as music style, lyrics, budget, and required quality.",
+      "You will be connected with the best production teams to execute your project to the highest standards."
+    ],
+    "q7": "How do social media services and platform management work?",
+    "a7": [
+      "Complete social media account management (Facebook, Instagram, TikTok, YouTube).",
+      "Performance analysis and strategy development to increase engagement and audience reach.",
+      "Paid advertisements to increase views and followers through professional methods.",
+      "Content protection and digital rights management to prevent copyright infringements."
+    ],
+    "q8": "How can I pay for services?",
+    "a8": [
+      "Credit and debit cards (Visa, MasterCard).",
+      "Vodafone Cash (available in select countries).",
+      "Bank transfer for major services.",
+      "All transactions are processed through encrypted payment systems to ensure full security."
+    ],
+    "q9": "Can I get a refund after purchasing a service?",
+    "a9": [
+      "All payments are final and non-refundable after accepting the terms and conditions of each service.",
+      "Refunds are only possible in the following cases:",
+      "The requested service is unavailable or could not be completed due to a technical or administrative issue.",
+      "Special humanitarian cases, which are evaluated by the management at its discretion."
+    ],
+    "q10": "How can I sign a contract with CloudWav Production as an artist?",
+    "a10": [
+      "Fill out the application form on the website.",
+      "Submit your personal information and previous works.",
+      "Your application will be reviewed, and you will be contacted regarding the contract.",
+      "Upon approval, a suitable contract will be signed to define the provided services and privileges."
+    ],
+    "q11": "How can I contact customer support?",
+    "a11": [
+      "Email: support@cloudwavproduction.com",
+      "Contact form on the website.",
+      "Live chat (if available).",
+      "The support team is available to assist you as quickly as possible."
+    ],
+    "q12": "What happens if my account gets suspended?",
+    "a12": [
+      "Your account may be suspended if you violate the Terms of Use or if suspicious activity is detected.",
+      "Users can submit an appeal request through customer support for review.",
+      "CloudWav Production reserves the right to suspend or delete violating accounts without prior notice."
+    ]
+  },
+  "tipsh": "* Tips for using CloudWav Production professionally:",
+  "tips": [
+    "Always check the email associated with your account for important updates.",
+    "Utilize music production services, paid videos, and social media management to maximize your project's success.",
+    "If you have additional inquiries, do not hesitate to contact our support team."
+  ],
+  "legal_warningh": "Legal warning",
+  "legal_warning": [
+    "Violating any platform policies may result in account suspension or permanent closure.",
+    "All payments are subject to a non-refund policy except for the cases mentioned in the refund policy.",
+    "CloudWav Production reserves the right to modify policies and terms according to its operational and legal needs."
+  ],
+  "not_found": "Didn't find your answer here? Contact us at support@cloudwavproduction.com, and we'll be happy to assist you!",
+  "modal": {
+    "title": "Service Request",
+    "name": "Your Name",
+    "email": "Your Email",
+    "number": "Your Number",
+    "message": "Message",
+    "phone": "Phone Number",
+    "whatsapp_number": "WhatsApp Number",
+    "social_links": "Social Media Links",
+    "details": "Details",
+    "send": "Send Now",
+    "close": "Close Modal",
+    "name_placeholder": "Enter your name",
+    "email_placeholder": "Enter your email",
+    "number_placeholder": "Enter your number",
+    "social_links_placeholder": "Enter your social media links",
+    "details_placeholder": "Enter additional details",
+    "division": "Artist Division",
+    "select_division": "Select Division",
+    "profile_image": "Your Image",
+    "agree_to": "I agree to",
+    "terms": "Terms & Conditions",
+    "submit": "Send Now",
+    "terms_agreement": "I agree to the terms and conditions",
+    "whatsapp_number_placeholder": "Enter whatsapp number ",
+    "platform": "Platform",
+    "phone_placeholder": " Enter your Phone Number ",
+    "platform_placeholder": " Enter Platform ",
+    "social_media_account": " Social Media Links ",
+    "social_media_account_placeholder": "Enter Social Media Links "
+  },
+  "servisespage": {
+    "title": "Social Media Specialist",
+    "description": "Here is the reality: having a strong Social Media presence is essential for Whether you are managing a local startup or a large-scale enterprise, social media is the bridge that connects your brand to your audience. It is more than just posting—it is about sharing valuable, engaging, and meaningful content that resonates with your customers. A well-executed social media strategy helps you boost brand awareness, build trust, enhance your online visibility, and make your business more memorable in a competitive digital landscape. Social media isn it just an option; it is the foundation for building lasting connections with your audience.",
+    "Get_started": "Get started",
+    "text1": "How it works",
+    "text2": "We believe that the best way to create successful marketing campaigns is to work closely with our clients to understand their goals and challenges.",
+    "Get_it_now": "Get it now",
+    "text3": "Lets talk for something Special",
+    "text4": "Our white-label technology consulting company has become one of the most sought-after Custom Web Development Services in a very short period. It is famous for its unique techniques and practical results."
+  },
+  "Get_started": "Get started",
+  "Send_message": "Send message",
+  "Get_it_now": "Get it now",
+  "Prices_start_from": "Prices start from",
+  "Creating_and_documenting_platforms": "Creating and documenting platforms",
+  "Creating_and_documenting_platforms_desc": "We help you create and manage social media platforms like Facebook, Instagram, Twitter, LinkedIn, and Pinterest, as well as social media apps like TikTok, YouTube, and Snapchat.",
+  "Recover_closed_accounts": "Recover closed accounts",
+  "Recover_closed_accounts_desc": "We help you recover closed accounts, reactivate deactivated accounts, and restore deleted accounts.",
+  "Create_sponsored_ads": "Create sponsored ads",
+  "Create_sponsored_ads_desc": "We help you create sponsored ads on platforms like Google Ads, Facebook Ads, and Google My Business, as well as on social media apps like TikTok, YouTube, and Snapchat.",
+  "platforms_management": "Platforms Management",
+  "platforms_management_desc": "A service for creating and managing all platforms for independent artists, protecting content ownership, and securing their earnings through a monthly or yearly subscription with the company.",
+  "start_free_trial": "Start Your Free Trial Now",
+  "request_demo": "Request a Demo",
+  "platform_illustration": "Platform Illustration",
+  "artist_profile": "Artist Profile",
+  "artist_profile_desc": "Customize an artist profile on our platform",
+  "providing_real_job": "Providing Real Job",
+  "providing_real_job_desc": "Providing real job opportunities through our platform",
+  "direct_download": "Direct Download",
+  "direct_download_desc": "Direct download with fast and secure access.",
+  "data_security": "Data Security",
+  "data_security_desc": "Protecting content and intellectual property rights during the contract terms.",
+  "ensuring_successful": "Ensuring Successful",
+  "ensuring_successful_desc": "Ensuring the successful receipt of profits in a timely and secure manner.",
+  "header": {
+    "title": "Release your music with us now, and it will remain available forever!",
+    "description": "Our Artist Support team ensures your tracks go live within 48 hours, helping you reach your audience faster."
+  },
+  "buttons": {
+    "pricing": "See plans & pricing",
+    "contact": "Contact us",
+    "send": "Send message",
+    "cancel": "cancel",
+    "send_now": "send now"
+  },
+  "features": {
+    "title": "Release with confidence",
+    "feature1": {
+      "title": "We'll never take your music down",
+      "desc": "Keep earning, even if you cancel."
+    },
+    "feature2": {
+      "title": "We'll support you along the way",
+      "desc": "Our distribution specialists are here to help."
+    },
+    "feature3": {
+      "title": "We'll pass along the perks",
+      "desc": "Enjoy instant profile verification for distributing with us."
+    },
+    "feature4": {
+      "title": "We'll help you make connections",
+      "desc": "We curate industry pros that you can hire to take your career further."
+    }
+  },
+  "contactend": {
+    "title": "Let's talk for something special",
+    "description": "Our white-label technology consulting company is highly sought after for its unique techniques.",
+    "name": "Your Name",
+    "email": "Your Email",
+    "message": "Project details"
+  },
+  "error": {
+    "title": "Error",
+    "general": "An error occurred while submitting the form.",
+    "server": "No response received from the server. Try again later."
+  },
+
+  "plans": {
+    "get_started": "Get Started",
+    "or_yearly": "or ${{price}} yearly",
+    "or_monthly": "or ${{price}} monthly",
+    "basic": "Basic",
+    "starter": "Starter",
+    "pro_tune": "Pro Tune",
+    "features": {
+      "unlimited_listening": "Unlimited listening",
+      "unlimited_download": "Unlimited downloading",
+      "direct_download": "Direct downloads",
+      "content_protection": "Content protection and copyright security during the contract period",
+      "revenue_security": "Ensuring successful revenue access",
+      "artist_platform_protection": "Protecting and developing the artist's platforms",
+      "artist_profile": "Customizing an artist profile on our platform",
+      "real_job_opportunities": "Providing real job opportunities through our platform",
+      "exclusive_marketing": "Uploading content to all our official platforms (Exclusive marketing service)",
+      "no_ads": "No ads",
+      "easy_browsing": "Easier browsing"
+    }
+  },
+  "public_figure": "Public Figure",
+  "Tiktokers": "Tiktokers",
+  "star": {
+    "order_now": "Order Now",
+    "personal_video": "Personal Video",
+    "business_work": "Business Work",
+    "about": "About",
+    "genres": "Genres",
+    "video": "Video"
+  },
+  "policy": {
+    "title": "CloudWav Production Policy",
+    "lastUpdate": "Last update: ",
+    "owner": "Owner: CloudWav Production",
+    "intro": "Welcome to CloudWav Production, a company specializing in music, professional services, advertising, brokerage, artificial intelligence, fashion, sales through other platforms, social media services, programming, artistic and visual production, contracting, partnerships, and other diverse services. We provide integrated solutions that support creators, artists, and content makers while ensuring digital rights protection and offering advanced promotional opportunities.",
+    "sections": [
+      {
+        "title": "1. About Our Services",
+        "content": [
+          "Producing and distributing music digitally on more than 200 global platforms.",
+          "A song platform that allows artists to share their work with the public.",
+          "Artist shout-outs, where customers can request promotional or greeting videos from artists.",
+          "Booking artists for events and advertising through a dedicated system within the platform.",
+          "Managing and executing digital advertising campaigns.",
+          "Mediating between brands and artists to facilitate collaborations.",
+          "Using AI to analyze data and deliver effective marketing strategies.",
+          "Producing professional-level music videos and visual ads.",
+          "Designing and developing websites and custom apps for creatives and businesses.",
+          "Managing contracts with artists and creatives to protect the rights of all parties.",
+          "Paid partnerships between individuals and companies to create new digital job opportunities.",
+          "Platform management service to protect content during the subscription period.",
+          "Ability to submit a request for full content protection based on agreement with the company."
+        ]
+      },
+      {
+        "title": "2. Artist Registration",
+        "content": [
+          "Registration is open to all artists without classifications (e.g., rising or famous artist).",
+          "You must provide accurate personal data, including a valid ID for identity verification.",
+          "The company has the right to reject any registration request that does not meet the required conditions.",
+          "The artist grants CloudWav Production the digital broadcasting rights only for the songs uploaded to the platform, while retaining full intellectual property rights."
+        ]
+      },
+      {
+        "title": "3. Data We Collect",
+        "content": [
+          "Personal information: name, email, phone number, account data.",
+          "Payment info: when subscribing to paid services (we do not store card data directly).",
+          "Usage data: such as pages you visit, device type, approximate location.",
+          "Cookies: We currently do not use them."
+        ]
+      },
+      {
+        "title": "4. How We Use Your Data",
+        "content": [
+          "To provide services such as music publishing, content management, and digital promotion.",
+          "To improve user experience by analyzing behavior and developing the platform and services.",
+          "Advertising and marketing by showing you content based on your interests.",
+          "Security and rights protection by detecting suspicious activity and preventing fraud."
+        ]
+      },
+      {
+        "title": "5. Digital Rights & Content Protection",
+        "content": [
+          "All artistic and musical works published through our platform are protected by intellectual property rights.",
+          "We use advanced technologies to prevent piracy and violations, offering solutions for digital content protection.",
+          "Artists can subscribe to platform management or request the company for full content protection."
+        ]
+      },
+      {
+        "title": "6. Paid Ads & Partnerships",
+        "content": [
+          "We show targeted ads but do not share your data with third parties without your consent.",
+          "Paid partnerships are available for companies and individuals interested in collaborating with creators and artists.",
+          "All financial dealings related to partnerships are conducted through formal contracts to ensure transparency and rights."
+        ]
+      },
+      {
+        "title": "7. Your Rights as a User",
+        "content": [
+          "You can request access to your personal data.",
+          "Correct any inaccurate information.",
+          "Request deletion of your data in some cases.",
+          "Unsubscribe from newsletters and targeted ads.",
+          "To contact us about your data, email: support@cloudwavproduction.com"
+        ]
+      },
+      {
+        "title": "8. Data Protection & Security",
+        "content": [
+          "We use the latest security technologies to protect user data from breaches or violations.",
+          "All payment transactions are handled by secure providers, and we do not store card data.",
+          "We do not share your data with any third party without your permission, except in legal cases or to protect our rights."
+        ]
+      },
+      {
+        "title": "9. Changes to the Policy",
+        "content": [
+          "This policy may be updated occasionally, and users will be notified of any major changes.",
+          "Continued use of our services means you accept the new policy after updates."
+        ]
+      },
+      {
+        "title": "10. Contact Us",
+        "content": [
+          "CloudWav Production – All rights reserved",
+          "Support email: support@cloudwavproduction.com",
+          "General contact: contact@cloudwavproduction.com",
+          "Official website: cloudwavproduction.com",
+          "Thank you for choosing CloudWav Production. We are here to support your creativity, protect your work, and help you succeed through advanced technology."
+        ]
+      }
+    ],
+    "policyUpdates": {
+      "title": "8. Policy Updates",
+      "content": "This policy may be updated from time to time, and users will be notified of significant changes. Continued use of our services means acceptance of the updated policy."
+    },
+    "contact": {
+      "title": "9. Contact Us",
+      "content": [
+        "CloudWav Production – All rights reserved.",
+        "Support Email: support@cloudwavproduction.com",
+        "General Inquiries: contact@cloudwavproduction.com",
+        "Official Website: cloudwavproduction.com"
+      ]
+    },
+    "footer": "Thank you for choosing CloudWav Production, we are here to support your creativity."
+  },
+  "Custom_Plan": "Custom Plan",
+  "artists": "Artists",
+  "Albums": "Albums",
+  "songs": "Songs",
+  "Trending songs": "Trending songs",
+  "Trending Albums": "Trending Albums",
+  "Recently Supported": "Recently Supported",
+  "Recently Added": "Recently Added",
+  "Accounts for You": "Accounts for You",
+  "Rising Singer": "Rising Singer",
+  "famous Singer": "famous Singer",
+  "Next": "Next",
+  "close_modal": "Close modal",
+  "form": {
+    "name": "Your Name",
+    "platform": "Platform",
+    "name_placeholder": "Enter your name ",
+    "phone_placeholder": " Enter your Phone Number ",
+    "platform_placeholder": " Enter Platform ",
+    "email": "Your Email",
+    "email_placeholder": "Enter your email",
+    "number": "Your Number",
+    "number_placeholder": "Enter your number",
+    "whatsapp_number": "Whatsapp Number",
+    "whatsapp_number_placeholder": "Enter your Whatsapp number",
+    "social_links": "Social Media Links",
+    "social_media_account": " Social Media Links ",
+    "social_media_account_placeholder": "Enter Social Media Links ",
+    "social_links_placeholder": "Enter your social media links",
+    "details": "More Details",
+    "details_placeholder": "Enter additional details",
+    "division": "Artist Division",
+    "select_division": "Select Division",
+    "profile_image": "Your Image",
+    "agree_to": "I agree to",
+    "terms": "Terms & Conditions",
+    "submit": "Send Now",
+    "title": "Service Request",
+    "message": "Message",
+    "phone": "Phone Number",
+    "send": "Send Now",
+    "close": "Close Modal",
+    "terms_agreement": "I agree to the terms and conditions"
+  },
+  "genres": {
+    "Mahraganat": "Mahraganat",
+    "rap": "Rap",
+    "pop": "Pop",
+    "jazz": "Jazz",
+    "rock": "Rock"
+  },
+  "close": "Close",
+  "name": "Your Name",
+  "email": "Your Email",
+  "number": "Your Phone",
+  "whatsapp_number": "WhatsApp Number",
+  "private_price": "Your Private Price",
+  "bussiness_price": "Your Business Price",
+  "details": "Your Details",
+  "social_links": "Your Social Links",
+  "division": "Your Division",
+  "select_division": "Select Division",
+  "Tiktok": "Tiktok",
+  "Musician": "Musician",
+  "Actor": "Actor",
+  "Content creator": "Content Creator",
+  "Youtuber": "Youtuber",
+  "Athlete": "Athlete",
+  "profile_image": "Your Profile Image",
+  "id_card": "Your ID Card Image",
+  "terms_agree": "I agree to the",
+  "terms_conditions": "Terms and Conditions",
+  "send_now": "Send Now",
+  "accpt": "I agree ",
+  "trams": "Terms",
+  "selectServ": "Choose music services",
+  "Voice_recording": "Voice Recording",
+  "Songwriting": "Song Writing",
+  "Music_production": "Music Production",
+  "Video_filming": "Video Filming",
+  "CreatingSong": "Creating a Full Song",
+  "CreatingSongclip": "Creating a Song with a Full Clip",
+  "selectServ_required": "Choose one or more services",
+  "Select": "Select Are You Will Do This YourSelf?",
+  "sing_it_myself": "I Will Sing It Myself",
+  "need_a_specific": "I Will Need A Specific",
+  
+  "MeOr_required": "Select One",
+  "Signout": "Sign Out",
+  "plaseSignIn": "You must log in",
+  "you must sign in first": "you must sign in first",
+  "SignIn": "Sign In",
+  "plaseAcceptTerms": "plase Accept Terms",
+  "you must accept terms and conditions": "you must accept terms and conditions",
+  "successSignIn": "Registration successful",
+  "you have been signed in": "you have been signed in",
+  "errorM": "Error",
+  "errorSignIn": "Error In Sign In",
+  "agree": "Terms and conditions must be agreed upon before registration.",
+  "successM": "Success Send",
+  "IWillDo_required": "Select If You Do",
+  "Choose music services": "Choose music services",
+  "termsOfUse": {
+    "title": "Terms and Conditions of CloudWav Production",
+    "updated": "Last Updated: (Insert Date Here)",
+    "owner": "Owner: CloudWav Production",
+    "sections": [
+      {
+        "title": "1. Introduction",
+        "content": [
+          "Welcome to CloudWav Production, a company specializing in professional services including music, artistic and visual production, advertising, mediation, artificial intelligence, clothing, selling on other platforms, social media services, programming, contracts, and partnerships.",
+          "Our platform is a comprehensive solution for supporting creators, artists, and content makers, ensuring digital rights protection and offering advanced promotional and marketing opportunities.",
+          "By using the site and its services, you fully agree to these terms and conditions. Please read them carefully before proceeding."
+        ]
+      },
+      {
+        "title": "2. General Registration (User Registration)",
+        "content": [
+          "Registration is available to all users wishing to browse the site and access public content without needing identity verification.",
+          "The user must provide accurate and complete data to ensure a quality experience on the site.",
+          "CloudWav Production reserves the right to reject or suspend user accounts if false or non-compliant information is provided."
+        ]
+      },
+      {
+        "title": "3. Artist Registration on the Platform",
+        "content": [
+          "Artist registration is available to all artists through the site, and requires accurate and complete personal information, along with an official identity document.",
+          "CloudWav Production reserves the right to reject or suspend any registration that does not meet the required conditions.",
+          "Registering as an artist on the platform grants the right to digitally broadcast uploaded works, while the artist remains the legal owner of all their content.",
+          "The artist has the right to modify or update their profile and musical content at any time."
+        ]
+      },
+      {
+        "title": "4. Contracting with Artists within the Company",
+        "content": [
+          "The company offers the option to contract with artists as official partners to provide exceptional production and promotion services.",
+          "Full personal information and an official identity document are required for contracting.",
+          "Contract requests are reviewed by CloudWav Production's management, and contracts are executed based on separate agreements defining the rights and responsibilities of both parties."
+        ]
+      },
+      {
+        "title": "5. Artist Registration on the Video Platform",
+        "content": [
+          "Registration on the video platform is for artists offering services such as promotional videos and personalized video greetings.",
+          "The artist must provide accurate personal data and official identity verification.",
+          "Registering on the video platform grants the artist the right to receive video requests from clients, with pricing set at their discretion.",
+          "After the client confirms and pays for the request, the artist receives 70% of the amount, while CloudWav Production retains 30%."
+        ]
+      },
+      {
+        "title": "6. Data We Collect",
+        "content": [
+          "Personal information (e.g., name, email, phone number, account data).",
+          "Payment information when subscribing to paid services (without storing card data directly).",
+          "Usage data such as visited pages, device type, and approximate geographical location.",
+          "Cookies are not currently used.",
+          "All data is handled with strict confidentiality according to the company's privacy policy."
+        ]
+      },
+      {
+        "title": "7. How We Use the Data",
+        "content": [
+          "Data is used to provide services such as content publishing, management, and user behavior analysis to improve the site experience.",
+          "Used in advertising and marketing to display personalized content based on user interests.",
+          "Used to ensure security and detect suspicious activity to prevent fraud."
+        ]
+      },
+      {
+        "title": "8. Digital Rights and Content Protection",
+        "content": [
+          "All digital rights of uploaded content remain the property of the artist; artist registration only grants CloudWav Production the right to digitally broadcast the uploaded works.",
+          "Advanced technologies are used to prevent piracy and violations, and digital content protection services are available.",
+          "Artists can subscribe to a platform management service or request full protection based on agreements."
+        ]
+      },
+      {
+        "title": "9. Advertising and Additional Services Policy",
+        "content": [
+          "Site services are provided under the full scope of CloudWav Production's services without internal ads for subscribers.",
+          "Artists can request additional marketing services to promote their content via paid ad campaigns or customized promotional strategies.",
+          "All advertising and marketing agreements are formalized through official contracts ensuring transparency and rights protection."
+        ]
+      },
+      {
+        "title": "10. Payments and Refund Policy",
+        "content": [
+          "All payments made through the site are final and non-refundable after accepting the service's specific terms and conditions.",
+          "CloudWav Production is not responsible for refunds after order confirmation, except in the following cases:",
+          "If the requested service is unavailable or not delivered due to a technical or administrative error.",
+          "In special humanitarian cases evaluated by the company's management.",
+          "Payments are processed through secure systems without storing card information."
+        ]
+      },
+      {
+        "title": "11. Data Protection and Privacy",
+        "content": [
+          "CloudWav Production is committed to protecting all personal data and not sharing it with third parties unless with explicit consent or a legal request.",
+          "The artist has the right to request full deletion of their data upon account or service cancellation."
+        ]
+      },
+      {
+        "title": "12. Account or Service Cancellation",
+        "content": [
+          "The artist can request to cancel their account or service at any time with prior notice to the company.",
+          "CloudWav Production is not obligated to restore the account or service after cancellation and may retain some data for legal or administrative purposes."
+        ]
+      },
+      {
+        "title": "13. Modification of Terms and Conditions",
+        "content": [
+          "CloudWav Production reserves the right to modify these terms and conditions at any time without prior notice.",
+          "Continued use of the account or service after any modifications constitutes full acceptance of the new terms."
+        ]
+      },
+      {
+        "title": "14. Contact and Technical Support",
+        "content": [
+          "Users can contact the support team to resolve any account or service-related issues.",
+          "Support is available via email or the contact form on the website."
+        ]
+      },
+      {
+        "title": "15. Additional Security Notes",
+        "content": [
+          "Users must provide accurate data to ensure service quality.",
+          "CloudWav Production is not responsible for any penalties imposed by streaming platforms due to violations.",
+          "If a technical issue arises, the user must contact support immediately."
+        ]
+      },
+      {
+        "title": "16. Legal Warning",
+        "content": [
+          "Any violation of these terms may result in account or service suspension or cancellation without notice.",
+          "CloudWav Production reserves the right to take legal action against users involved in fraudulent or illegal activities."
+        ]
+      },
+      {
+        "title": "17. Contact Us",
+        "content": [
+          "CloudWav Production – All rights reserved.",
+          "Support email: support@cloudwavproduction.com",
+          "General contact: contact@cloudwavproduction.com",
+          "Official website: cloudwavproduction.com"
+        ]
+      }
+    ]
+  },
+  "name": "Full Name",
+  "email": "Email",
+  "number": "Phone Number",
+  "whatsapp_number": "WhatsApp Number",
+  "division": "Division",
+  "social_links": "Social Media Link",
+  "private_price": "Private Price",
+  "bussiness_price": "Business Price",
+  "profile_image": "Profile Image",
+  "id_card": "ID Card",
+  "details": "Additional Details",
+  "close": "Close",
+  "تسجيل صانع محتوى فيديو": "Register Video Content Creator",
+  "أدخل اسمك الكامل": "Enter your full name",
+  "أي تفاصيل إضافية تود إضافتها...": "Any additional details you would like to add...",
+  "terms_agree": "I agree to the",
+  "terms_conditions": "Terms and Conditions",
+  "Sending....": "Sending....",
+  "send_now": "Send Now",
+  "name is invalid": "Name is required.",
+  "cant be less than 3 letters": "Cannot be less than 3 letters.",
+  "cant be more than 20 letters": "Cannot be more than 20 letters.",
+  "this is invalid": "This field is required.",
+  "enter the correct email": "Please enter a valid email address.",
+  "رقم الهاتف مطلوب": "Phone number is required.",
+  "يجب أن يكون الرقم يحتوي على رمز الدولة الدولي قبل الرقم.": "The phone number must include the country code.",
+  "division is required": "Division is required.",
+  "social links is required": "Social link is required.",
+  "enter the correct url": "Please enter a valid URL (must start with http:// or https://).",
+  "الصورة الشخصيه مطلوبة": "Profile image is required.",
+  "يجب أن تكون الصورة بصيغة JPEG, PNG, أو": "Image must be in JPEG, PNG, or GIF format.",
+  "يجب أن لا يتجاوز حجم الصورة 2MB": "Image size must not exceed 2MB.",
+  "صورة البطاقه الشخصيه مطلوبه": "ID card image is required.",
+  "السعر الخاص مطلوب": "Private price is required.",
+  "يجب أن يكون السعر الخاص رقمًا موجبًا": "Private price must be a positive number.",
+  "السعر التجاري مطلوب": "Business price is required.",
+  "يجب أن يكون السعر التجاري رقمًا موجبًا": "Business price must be a positive number.",
+  "services": {
+    "Voice_Recording": "Voice Recording",
+    "Song_Writing": "Song Writing",
+    "Music_Production": "Music Production ",
+    "Video_Filming": "Video Filming ",
+    "Creating_Full_Song": "Creating Full Song",
+    "Creating_Song_With_Clip": "Creating Song With Clip"
+  },
+  "choose_music_services": "Choose music services",
+  "select_option": "Select an option",
+
+  "banner_image": "Banner Image",
+  "music_platform": "The music platform",
+  "join_our_platform": "Join Our Platform!",
+  "platform_description_1": "Our platform helps singers create profiles, share",
+  "platform_description_2": "their songs, and connect with fans worldwide to",
+  "platform_description_3": "elevate their careers.",
+  "join_us_now": "Join us now",
+
+  "browse": "Browse",
+  "home": "Home",
+  "trending_songs": "Trending songs",
+  "trending_albums": "Trending Albums",
+  "recently_supported": "Recently Supported",
+  "recently_added": "Recently Added",
+
+  "top_songs": "Top Songs",
+  "top_albums": "Top Albums",
+  "top_supported": "Top Supported",
+
+  "genres": "Genres",
+  "all_genres": "All Genres",
+  "shaapey": "Shaapey",
+  "rap": "Rap",
+  "hip_hop": "Hip-Hop",
+  "instrumental": "Instrumental",
+  "rock": "Rock",
+  "mahrgnat": "Mahrgnat",
+  "afrah_shabey": "Afrah Shabey",
+  "featurestitle": "Our services include : ",
+  "headerdescription": "We provide everything you need to create your song from start to finish. Whether you're an emerging artist or a professional, our services are designed to help you present your best self with the highest quality.",
+  "features": {
+    "feature1": {
+      "title": "Professional Voice Recording",
+      "description": "Record your voice in a studio equipped with the latest technology, with a sound engineer to ensure clarity and high quality."
+    },
+    "feature2": {
+      "title": "Song Lyrics Writing",
+      "description": "We help you write lyrics that express you, match your style, and deliver your message."
+    },
+    "feature3": {
+      "title": "Music Production & Arrangement",
+      "description": "Original music and professional arrangement by experienced producers and musicians, across various styles and genres."
+    },
+    "feature4": {
+      "title": "Professional Music Video Shooting",
+      "description": "Shoot a high-quality music video with a specialized directing and filming team, including lighting, editing, and visual effects."
+    },
+    "feature5": {
+      "title": "Complete Song Creation",
+      "description": "From lyrics and composition to recording, arrangement, and mastering—we deliver a fully finished, publish-ready song."
+    },
+    "feature6": {
+      "title": "Full Song & Music Video Package",
+      "description": "A complete package including song production and high-quality video clip, with full coordination between all project elements."
+    }
+  },
+  "dashboard": {
+    "navLinks": {
+      "videoCreator": "video creator",
+      "requestACreator": "Request A Creator",
+      "requestAArtist": "Request A Artist",
+      "services": "Services",
+      "musicDistribution": "music Distribution",
+      "accountCreation": "account creation",
+      "verifySocialMediaAccounts": "verify social accounts",
+      "recoverSocialMediaAccount": "recover social account",
+      "SponsoredAds": "Sponsored ads",
+      "platformManagement": "Platform Management",
+      "accountSettings": "Account Settings",
+      "settings": "Settings",
+      "artistSettings": "Artist Settings",
+      "creatorSettings": "Creator Settings",
+      "albumSettings": "Album Settings",
+      "songSettings": "Song Settings",
+      "users": "Users",
+      "messages": "Messages",
+      "profile-update": "Profile Update",
+      "orders": "Orders",
+      "uploadVideo":"Videos of Creator"
+    },
+    "table": {
+      "search": "search",
+      "actions": "actions",
+      "noResult": "no Result"
+    },
+    "requestACreatorPage": {
+      "profileImage": "profile image",
+      "idCard": "id card",
+      "name": "name",
+      "division": "division",
+      "number": "number",
+      "whatsapp": "whatsapp",
+      "email": "email",
+      "businessPrice": "business price",
+      "privatePrice": "private price",
+      "details": "details",
+      "platform": "platform",
+      "status": "status",
+      "song": "song",
+      "album_cover": "Album Cover",
+      "cover_url": "Cover Image",
+      "likeCount": "Like Count",
+      "sound": "sound",
+      "title": "title",
+      "artist": "artist",
+      "album": "album",
+      "role": "role",
+      "createdAt": "create at",
+      "message": "Message",
+      "first_name": "frist name",
+      "last_name": "last name",
+      "video_creator": "video creator",
+      "user": "user",
+      "options": "options",
+      "socialMediaAccount": "social Media Account",
+      "videos" :"Videos",
+      "video" :"Video"
+    }
+  }
+}
