@@ -6,7 +6,8 @@ import AnimationLink from "../AnimationLink/AnimationLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { useAuth } from "../../Providers/AuthContext";
-import { RiEditLine, RiGlobalLine, RiUserLine } from "@remixicon/react";
+import { RiEditLine, RiGlobalLine, RiUserLine, RiMailLine } from "@remixicon/react";
+import ChangeEmailDialog from "../ChangeEmailDialog/ChangeEmailDialog";
 
 import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import Spinner, { Spinner2 } from "../Spinner/Spinner";
@@ -132,6 +133,7 @@ function UserProfile() {
   const auth = useAuth();
   const [openMenu, setOpenMenu] = useState<boolean>(false);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openChangeEmailDialog, setOpenChangeEmailDialog] = useState<boolean>(false);
   const [creatorId, setCreatorId] = useState<number | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -361,6 +363,13 @@ function UserProfile() {
             </button>
           )}
           <button
+            className="flex-center w-full border-1 border-blue-500 rounded mt-3 py-3 bg-white text-blue-500 hover:bg-blue-500 hover:text-white transition-colors cursor-pointer "
+            onClick={() => setOpenChangeEmailDialog(true)}
+          >
+            <RiMailLine className="mr-2" />
+            Change Email
+          </button>
+          <button
             className="logout flex-center w-full border-1 border-green-500 rounded mt-3 py-3 bg-white text-green-500 hover:bg-green-500 hover:text-white transition-colors cursor-pointer "
             onClick={() => auth?.logout?.mutate()}
           >
@@ -465,6 +474,11 @@ function UserProfile() {
           }}
         />
       )}
+      
+      <ChangeEmailDialog
+        open={openChangeEmailDialog}
+        handleClose={() => setOpenChangeEmailDialog(false)}
+      />
     </>
   );
 }
@@ -476,6 +490,7 @@ function MobileUserProfile() {
   // UserProfile component remains unchanged
   const auth = useAuth();
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openChangeEmailDialog, setOpenChangeEmailDialog] = useState<boolean>(false);
   const [creatorId, setCreatorId] = useState<number | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -714,6 +729,13 @@ function MobileUserProfile() {
             </button>
           )}
           <button
+            className="flex-center w-full border-1 border-blue-500 rounded mt-3 py-3 bg-white text-blue-500 hover:bg-blue-500 hover:text-white transition-colors cursor-pointer"
+            onClick={() => setOpenChangeEmailDialog(true)}
+          >
+            <RiMailLine className="mr-2" />
+            Change Email
+          </button>
+          <button
             className="flex-1 flex-center gap-2 rounded border border-green-500 py-2 px-3 text-green-500 hover:bg-green-500 hover:text-white transition-colors cursor-pointer"
             onClick={() => auth?.logout?.mutate()}
           >
@@ -804,6 +826,11 @@ function MobileUserProfile() {
           }}
         />
       )}
+      
+      <ChangeEmailDialog
+        open={openChangeEmailDialog}
+        handleClose={() => setOpenChangeEmailDialog(false)}
+      />
     </>
   );
 }

@@ -878,6 +878,35 @@
       "description": "باكدج متكامل يشمل إنتاج الأغنية وتصوير الكليب بجودة عالية وتنسيق شامل بين كل عناصر العمل."
     }
   },
+  "changeEmail": {
+    "changeEmailAddress": "تغيير عنوان البريد الإلكتروني",
+    "sendCodeToCurrentEmail": "سنرسل رمز التحقق إلى عنوان بريدك الإلكتروني الحالي",
+    "currentEmail": "البريد الإلكتروني الحالي",
+    "sendVerificationCode": "إرسال رمز التحقق",
+    "sendingCode": "جاري إرسال الرمز...",
+    "verifyCurrentEmail": "التحقق من البريد الإلكتروني الحالي",
+    "enterSixDigitCodeCurrent": "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني الحالي",
+    "codeSentTo": "تم إرسال الرمز إلى",
+    "newEmailAddress": "عنوان البريد الإلكتروني الجديد",
+    "enterNewEmail": "أدخل بريدك الإلكتروني الجديد",
+    "verifyAndSendToNewEmail": "تحقق وإرسال إلى البريد الجديد",
+    "verifying": "جاري التحقق...",
+    "verifyNewEmail": "التحقق من البريد الإلكتروني الجديد",
+    "enterSixDigitCodeNew": "أدخل الرمز المكون من 6 أرقام المرسل إلى عنوان بريدك الإلكتروني الجديد",
+    "completeEmailChange": "إكمال تغيير البريد الإلكتروني",
+    "emailChangedSuccessfully": "تم تغيير البريد الإلكتروني بنجاح!",
+    "emailUpdatedTo": "تم تحديث عنوان بريدك الإلكتروني إلى {{email}}",
+    "canUseNewEmailToSignIn": "يمكنك الآن استخدام عنوان بريدك الإلكتروني الجديد لتسجيل الدخول",
+    "otpSent": "تم إرسال رمز التحقق",
+    "checkCurrentEmail": "يرجى التحقق من بريدك الإلكتروني الحالي للحصول على رمز التحقق",
+    "checkNewEmail": "يرجى التحقق من {{email}} للحصول على رمز التحقق",
+    "failedToSendOtp": "فشل في إرسال رمز التحقق",
+    "invalidOtpOrEmail": "رمز تحقق أو بريد إلكتروني غير صالح",
+    "invalidOtp": "رمز تحقق غير صالح",
+    "enterSixDigitCode": "يرجى إدخال رمز مكون من 6 أرقام",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "enterNewEmail": "يرجى إدخال عنوان بريدك الإلكتروني الجديد"
+  },
   "dashboard": {
     "navLinks": {
       "videoCreator": "منشئ الفيديو",

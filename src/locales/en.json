@@ -921,6 +921,35 @@
       "description": "A complete package including song production and high-quality video clip, with full coordination between all project elements."
     }
   },
+  "changeEmail": {
+    "changeEmailAddress": "Change Email Address",
+    "sendCodeToCurrentEmail": "We'll send a verification code to your current email address",
+    "currentEmail": "Current Email",
+    "sendVerificationCode": "Send Verification Code",
+    "sendingCode": "Sending Code...",
+    "verifyCurrentEmail": "Verify Current Email",
+    "enterSixDigitCodeCurrent": "Enter the 6-digit code sent to your current email",
+    "codeSentTo": "Code sent to",
+    "newEmailAddress": "New Email Address",
+    "enterNewEmail": "Enter your new email",
+    "verifyAndSendToNewEmail": "Verify & Send to New Email",
+    "verifying": "Verifying...",
+    "verifyNewEmail": "Verify New Email",
+    "enterSixDigitCodeNew": "Enter the 6-digit code sent to your new email address",
+    "completeEmailChange": "Complete Email Change",
+    "emailChangedSuccessfully": "Email Changed Successfully!",
+    "emailUpdatedTo": "Your email address has been updated to {{email}}",
+    "canUseNewEmailToSignIn": "You can now use your new email address to sign in",
+    "otpSent": "OTP Sent",
+    "checkCurrentEmail": "Please check your current email for the verification code",
+    "checkNewEmail": "Please check {{email}} for the verification code",
+    "failedToSendOtp": "Failed to send OTP",
+    "invalidOtpOrEmail": "Invalid OTP or email",
+    "invalidOtp": "Invalid OTP",
+    "enterSixDigitCode": "Please enter a 6-digit code",
+    "emailRequired": "Email Required",
+    "enterNewEmail": "Please enter your new email address"
+  },
   "dashboard": {
     "navLinks": {
       "videoCreator": "video creator",
