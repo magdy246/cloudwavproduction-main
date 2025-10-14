@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../Providers/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProtectRoute from "../../utils/ProtectRoute";
+import HCaptchaComponent, { HCaptchaRef } from "../../components/HCaptcha/HCaptcha";
 
 export function OAuthForm() {
   const { t } = useTranslation();
@@ -258,6 +259,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const hcaptchaRef = useRef<HCaptchaRef>(null);
   
   // Handle OAuth callback
   useEffect(() => {
@@ -338,7 +341,7 @@ export default function Login() {
   // Regular login mutation
   const { mutate, isPending, isError } = useMutation({
     mutationKey: ["login"],
-    mutationFn: (data) => axiosServices.post("/login", data),
+    mutationFn: (data) => axiosServices.post("/login", { ...data, captcha_token: captchaToken }),
     onSuccess: (data) => {
       const loginResponse = data.data;
       localStorage.setItem(
@@ -356,6 +359,11 @@ export default function Login() {
       
       auth?.setIsLogin(true);
       navigate("/");
+    },
+    onError: () => {
+      // Reset captcha on error
+      hcaptchaRef.current?.reset();
+      setCaptchaToken(null);
     },
   });
   
@@ -380,7 +388,24 @@ export default function Login() {
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const submitting = (data:any) => {
+    if (!captchaToken) {
+      // Show error message or focus captcha
+      return;
+    }
     mutate(data);
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
+    setCaptchaToken(null);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   // Show loading spinner if processing OAuth
@@ -464,11 +489,23 @@ export default function Login() {
                 );
               }}
             />
+            
+            {/* hCaptcha */}
+            <div className="mt-4">
+              <HCaptchaComponent
+                ref={hcaptchaRef}
+                onVerify={handleCaptchaVerify}
+                onError={handleCaptchaError}
+                onExpire={handleCaptchaExpire}
+                className="flex justify-center"
+              />
+            </div>
+            
             <p className="error__message">{isError && t("errors.default")}</p>
             <button
               type="submit"
               className="submit__button disabled:opacity-45"
-              disabled={isPending}
+              disabled={isPending || !captchaToken}
             >
               {isPending ? <Spinner /> : t("SignUp")}
             </button>

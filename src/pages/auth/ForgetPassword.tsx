@@ -18,6 +18,7 @@ import Spinner from "../../components/Spinner/Spinner";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import HCaptchaComponent, { HCaptchaRef } from "../../components/HCaptcha/HCaptcha";
 
 function OtpVerified({ email }: { email: string }) {
   const [otp, setOtp] = useState<string[]>();
@@ -168,6 +169,8 @@ export default function ForgetPassword() {
   const auth = useAuth();
   const carousel = useRef<HTMLDivElement | null>(null);
   const [steps, setSteps] = useState<number>(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const hcaptchaRef = useRef<HCaptchaRef>(null);
 
   const schema = z.object({
     email: z.string().email(),
@@ -179,13 +182,35 @@ export default function ForgetPassword() {
 
   const { mutate, isPending } = useMutation<any, AxiosError<Error>, TField>({
     mutationKey: ["forget-password"],
-    mutationFn: (data) => axiosServices.post("/forgot-password", data),
-    onError: () => Swal.fire("the email is incorrect", "", "error"),
+    mutationFn: (data) => axiosServices.post("/forgot-password", { ...data, captcha_token: captchaToken }),
+    onError: () => {
+      Swal.fire("the email is incorrect", "", "error");
+      // Reset captcha on error
+      hcaptchaRef.current?.reset();
+      setCaptchaToken(null);
+    },
     onSuccess: () => setSteps(1),
   });
 
   const submitting: SubmitHandler<TField> = (data) => {
+    if (!captchaToken) {
+      // Show error message or focus captcha
+      return;
+    }
     mutate(data);
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
+    setCaptchaToken(null);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   useGSAP(
@@ -269,11 +294,23 @@ export default function ForgetPassword() {
                     </div>
                   </div>
                 </div>
+                
+                {/* hCaptcha */}
+                <div className="mt-4">
+                  <HCaptchaComponent
+                    ref={hcaptchaRef}
+                    onVerify={handleCaptchaVerify}
+                    onError={handleCaptchaError}
+                    onExpire={handleCaptchaExpire}
+                    className="flex justify-center"
+                  />
+                </div>
+                
                 {/* button */}
                 <button
                   className="submit__button bg-purple-700 mt-4 disabled:opacity-50"
                   onClick={handleSubmit(submitting)}
-                  disabled={isPending}
+                  disabled={isPending || !captchaToken}
                 >
                   {isPending ? <Spinner /> : "Send Link Reset Password"}
                 </button>

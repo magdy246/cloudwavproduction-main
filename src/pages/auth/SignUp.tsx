@@ -26,6 +26,7 @@ import Spinner from "../../components/Spinner/Spinner";
 import { useNavigate } from "react-router-dom";
 import ProtectRoute from "../../utils/ProtectRoute";
 import { useAuth } from "../../Providers/AuthContext";
+import HCaptchaComponent, { HCaptchaRef } from "../../components/HCaptcha/HCaptcha";
 
 export function OAuthForm() {
   // const { t } = useTranslation();
@@ -175,6 +176,8 @@ export default function SignUp() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const auth = useAuth();
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const hcaptchaRef = useRef<HCaptchaRef>(null);
   const fields: TIField[] = [
     {
       name: "name",
@@ -281,17 +284,39 @@ export default function SignUp() {
     TField
   >({
     mutationKey: ["sign-up"],
-    mutationFn: (data: TField) => axiosServices.post("/register", data),
+    mutationFn: (data: TField) => axiosServices.post("/register", { ...data, captcha_token: captchaToken }),
     onSuccess: () => {
       localStorage.setItem("credential", JSON.stringify(getValues()));
       navigate("/verified-email", {
         replace: true,
       });
     },
+    onError: () => {
+      // Reset captcha on error
+      hcaptchaRef.current?.reset();
+      setCaptchaToken(null);
+    },
   });
 
   const submitting: SubmitHandler<TField> = (data) => {
+    if (!captchaToken) {
+      // Show error message or focus captcha
+      return;
+    }
     mutate(data);
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
+    setCaptchaToken(null);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   return (
@@ -333,6 +358,18 @@ export default function SignUp() {
                   />
                 ))}
               </div>
+              
+              {/* hCaptcha */}
+              <div className="mt-4">
+                <HCaptchaComponent
+                  ref={hcaptchaRef}
+                  onVerify={handleCaptchaVerify}
+                  onError={handleCaptchaError}
+                  onExpire={handleCaptchaExpire}
+                  className="flex justify-center"
+                />
+              </div>
+              
               {isError && (
                 <p className="error__message">
                   {error.response?.data?.message}
@@ -341,7 +378,7 @@ export default function SignUp() {
               <button
                 type="submit"
                 className="submit__button disabled:opacity-50"
-                disabled={isPending}
+                disabled={isPending || !captchaToken}
               >
                 {isPending ? <Spinner /> : t("signUp")}
               </button>

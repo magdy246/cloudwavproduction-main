@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { axiosServices } from "../../utils/axios";
@@ -10,6 +10,7 @@ import { useAuth } from "../../Providers/AuthContext";
 import Swal from "sweetalert2";
 import clsx from "clsx";
 import { RiMailLine, RiCheckFill, RiArrowRightLine } from "@remixicon/react";
+import HCaptchaComponent, { HCaptchaRef } from "../HCaptcha/HCaptcha";
 
 interface ChangeEmailDialogProps {
   open: boolean;
@@ -25,6 +26,8 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
   const [newEmail, setNewEmail] = useState("");
   const [oldEmailOtp, setOldEmailOtp] = useState("");
   const [newEmailOtp, setNewEmailOtp] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const hcaptchaRef = useRef<HCaptchaRef>(null);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -33,12 +36,13 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
       setNewEmail("");
       setOldEmailOtp("");
       setNewEmailOtp("");
+      setCaptchaToken(null);
     }
   }, [open]);
 
   // Step 1: Send OTP to old email
   const { mutate: sendOldEmailOtp, isPending: sendingOldOtp } = useMutation({
-    mutationFn: () => axiosServices.post("/send-old-email-code"),
+    mutationFn: () => axiosServices.post("/send-old-email-code", { captcha_token: captchaToken }),
      onSuccess: () => {
        setCurrentStep("verify-old-otp");
        Swal.fire({
@@ -55,6 +59,9 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
          text: error.response?.data.error || t("changeEmail.failedToSendOtp"),
          icon: "error",
        });
+       // Reset captcha on error
+       hcaptchaRef.current?.reset();
+       setCaptchaToken(null);
      },
   });
 
@@ -91,7 +98,7 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
        setTimeout(() => {
          handleClose();
          Swal.fire({
-           title: t("success.title"),
+           title: t("success"),
            text: t("changeEmail.emailChangedSuccessfully"),
            icon: "success",
          });
@@ -107,7 +114,28 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
   });
 
   const handleSendOldEmailOtp = () => {
+    if (!captchaToken) {
+      Swal.fire({
+        title: t("error.title"),
+        text: "Please complete the captcha verification",
+        icon: "warning",
+      });
+      return;
+    }
     sendOldEmailOtp();
+  };
+
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaError = (error: string) => {
+    console.error('Captcha error:', error);
+    setCaptchaToken(null);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   const handleVerifyOldEmailOtp = () => {
@@ -170,9 +198,19 @@ export default function ChangeEmailDialog({ open, handleClose }: ChangeEmailDial
                </p>
              </div>
 
+             {/* hCaptcha */}
+             <div className="flex justify-center">
+               <HCaptchaComponent
+                 ref={hcaptchaRef}
+                 onVerify={handleCaptchaVerify}
+                 onError={handleCaptchaError}
+                 onExpire={handleCaptchaExpire}
+               />
+             </div>
+
             <button
               onClick={handleSendOldEmailOtp}
-              disabled={sendingOldOtp}
+              disabled={sendingOldOtp || !captchaToken}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                {sendingOldOtp ? (
