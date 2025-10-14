@@ -13,7 +13,7 @@ interface TTableOfContent<T> {
   refetch: () => void;
   acceptRoute: string;
   otherRoute?: string;
-  actions: { action: (id: number) => void; Icon: ReactNode }[];
+  actions: { action: (id: number) => void; Icon: ReactNode | ((rowId: number) => ReactNode) }[];
 }
 
 export function TableOfContent<T>({
@@ -172,7 +172,10 @@ export function TableOfContent<T>({
                           }
                           className="rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100  transition-all duration-200 ease-in-out transform hover:scale-105"
                         >
-                          {action.Icon}
+                          {typeof action.Icon === 'function' 
+                            ? action.Icon(dBody["id" as keyof typeof dBody] as number)
+                            : action.Icon
+                          }
                         </button>
                       ))}
                     </div>

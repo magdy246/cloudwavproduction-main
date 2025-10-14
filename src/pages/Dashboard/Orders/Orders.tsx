@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { TableOfContent } from "../../../components/DashboardComponents/Table/Table";
 import { axiosServices } from "../../../utils/axios";
@@ -8,6 +9,7 @@ import Swal from "sweetalert2";
 import { Spinner2 } from "../../../components/Spinner/Spinner";
 export default function Orders() {
   const { t } = useTranslation();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const {
     data: orders = [],
     isFetching,
@@ -23,13 +25,18 @@ export default function Orders() {
     AxiosError<Error>,
     number
   >({
-    mutationFn: (id) => axiosServices.delete(`/orders/${id}`),
+    mutationFn: (id) => {
+      setDeletingId(id);
+      return axiosServices.delete(`/orders/${id}`);
+    },
     onSuccess: (data) => {
       Swal.fire(data.data.message || "Order deleted successfully", "", "success");
       refetch();
+      setDeletingId(null);
     },
     onError: (error) => {
       Swal.fire(error.response?.data.message || "Error deleting order", "", "error");
+      setDeletingId(null);
     },
   });
 
@@ -79,10 +86,10 @@ export default function Orders() {
           },
         ]}
         actions={actionsList.map((el) => ({
-          action: deleting ? () => {} : (id) => deleteOrder(id),
-          Icon: (
+          action: (id) => deleteOrder(id),
+          Icon: (rowId) => (
             <span className="w-10 h-10 flex items-center justify-center bg-red-200 text-red-600 rounded-full cursor-pointer hover:bg-red-300 transition-colors">
-              {deleting ? <Spinner2 w={10} h={10} /> : el.Icon}
+              {deletingId === rowId ? <Spinner2 w={10} h={10} /> : el.Icon}
             </span>
           ),
         }))}

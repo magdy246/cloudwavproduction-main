@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { TableOfContent } from "../../../components/DashboardComponents/Table/Table";
 import { axiosServices } from "../../../utils/axios";
@@ -9,6 +10,7 @@ import { Spinner2 } from "../../../components/Spinner/Spinner";
 
 export default function AdminMusicDistribution() {
   const { t } = useTranslation();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const {
     data: musicDistributions = [],
@@ -25,13 +27,18 @@ export default function AdminMusicDistribution() {
     AxiosError<Error>,
     number
   >({
-    mutationFn: (id) => axiosServices.delete(`/service-delete/${id}`),
+    mutationFn: (id) => {
+      setDeletingId(id);
+      return axiosServices.delete(`/service-delete/${id}`);
+    },
     onSuccess: (data) => {
       Swal.fire(data.data.message || "Service deleted successfully", "", "success");
       refetch();
+      setDeletingId(null);
     },
     onError: (error) => {
       Swal.fire(error.response?.data.message || "Error deleting service", "", "error");
+      setDeletingId(null);
     },
   });
 
@@ -91,10 +98,10 @@ export default function AdminMusicDistribution() {
         },
       ]}
       actions={actionsList.map((el) => ({
-        action: isDeleting ? () => {} : (id) => deleteService(id),
-        Icon: (
+        action: (id) => deleteService(id),
+        Icon: (rowId) => (
           <span className="w-10 h-10 flex items-center justify-center bg-red-200 text-red-600 rounded-full cursor-pointer hover:bg-red-300 transition-colors">
-            {isDeleting ? <Spinner2 w={10} h={10} /> : el.Icon}
+            {deletingId === rowId ? <Spinner2 w={10} h={10} /> : el.Icon}
           </span>
         ),
       }))}
