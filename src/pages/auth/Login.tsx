@@ -341,7 +341,8 @@ export default function Login() {
   // Regular login mutation
   const { mutate, isPending, isError } = useMutation({
     mutationKey: ["login"],
-    mutationFn: (data) => axiosServices.post("/login", { ...data, captcha_token: captchaToken }),
+    mutationFn: (data: Record<string, unknown>) =>
+      axiosServices.post("/login", { ...(typeof data === "object" && data !== null ? data : {}), captcha_token: captchaToken }),
     onSuccess: (data) => {
       const loginResponse = data.data;
       localStorage.setItem(

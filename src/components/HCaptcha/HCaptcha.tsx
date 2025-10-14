@@ -1,4 +1,4 @@
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import { useRef, forwardRef, useImperativeHandle } from 'react';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 interface HCaptchaProps {

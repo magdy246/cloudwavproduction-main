@@ -10,6 +10,10 @@ import {
   RiVolumeDownLine,
   RiVolumeMuteLine,
   RiVolumeUpLine,
+  RiHeartLine,
+  RiHeartFill,
+  RiShareLine,
+  RiMoreLine,
 } from "@remixicon/react";
 import clsx from "clsx";
 import { useGSAP } from "@gsap/react";
@@ -25,18 +29,21 @@ export function MediaPlayerHome() {
   const { currentSong, setCurrentSong } = usePlayer();
   const [miniPlayer, setMiniPlayer] = useState(true);
   const container = useRef<HTMLDivElement | null>(null);
+  
   useGSAP(
     () => {
       if (currentSong && miniPlayer) {
         gsap.to(container.current, {
           top: 0,
-          ease: "circ.in",
+          ease: "power3.out",
+          duration: 0.8,
         });
         return;
       }
       gsap.to(container.current, {
         top: "100%",
-        ease: "circ.out",
+        ease: "power3.in",
+        duration: 0.6,
       });
     },
     { scope: container, dependencies: [currentSong, miniPlayer] }
@@ -49,48 +56,93 @@ export function MediaPlayerHome() {
     }
     document.body.style.overflow = "visible";
   }, [currentSong, miniPlayer]);
+  
   return (
     currentSong && (
       <>
+        {/* Enhanced Fullscreen Background */}
         <div
-          className="w-full h-screen fixed  top-full transition-all z-99 "
+          className="w-full h-screen fixed top-full transition-all z-99"
           ref={container}
         >
-          {/* background */}
-          <div className="absolute w-full h-full backdrop-blur-2xl" />
-          <div className="w-full h-screen bg-[#362d55] opacity-70">
+          {/* Simple Black Overlay */}
+          <div className="absolute inset-0 bg-black/10 z-10" />
+          
+          {/* Background Image */}
+          <div className="absolute inset-0 overflow-hidden">
             <img
               src={currentSong.cover_url || currentSong.cover_path}
               className="w-full h-full object-cover"
             />
           </div>
 
-          {/* image center */}
-          <div
-            className="absolute top-1/2 left-1/2 bg-green-500 -translate-x-1/2 -translate-y-1/2 w-90 h-90 rounded-full overflow-hidden z-99 transition-all"
-            ref={circle}
-          >
-            <img
-              src={currentSong.cover_url}
-              className="w-full h-full object-cover"
-            />
+          {/* Floating Particles Effect */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-white/30 rounded-full animate-pulse"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${2 + Math.random() * 3}s`,
+                }}
+              />
+            ))}
           </div>
 
-          {/* canvas */}
-          <canvas ref={canvas} className="absolute bottom-20" />
-          {/* player */}
+          {/* Enhanced Album Art */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="relative">
+              {/* Outer Glow Ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#5626D5] via-[#30B797] to-[#5626D5] animate-spin" 
+                   style={{ animationDuration: '20s', padding: '8px' }}>
+                <div className="w-full h-full rounded-full bg-black/20 backdrop-blur-sm" />
+              </div>
+              
+              {/* Main Album Art */}
+              <div
+                className="relative w-80 h-80 rounded-full overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm z-20"
+                ref={circle}
+              >
+                <img
+                  src={currentSong.cover_url}
+                  className="w-full h-full object-cover z-30"
+                />
+                {/* Inner Glow */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/10" />
+              </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-[#5626D5] to-[#30B797] rounded-full animate-bounce" 
+                   style={{ animationDelay: '0.5s' }} />
+              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-gradient-to-r from-[#30B797] to-[#5626D5] rounded-full animate-bounce" 
+                   style={{ animationDelay: '1s' }} />
+            </div>
+          </div>
+
+          {/* Enhanced Canvas */}
+          <canvas ref={canvas} className="absolute bottom-0 left-0 w-full h-full opacity-60" />
+          
+          {/* Song Info Overlay */}
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 text-center z-10">
+            <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+              {currentSong.title}
+            </h1>
+            <p className="text-xl text-white/80 drop-shadow-md">
+              {currentSong.artist}
+            </p>
+          </div>
         </div>
+        
+        {/* Enhanced Player Controls */}
         {createPortal(
-          <div
-            className={clsx(
-              "fixed w-full -bottom-0 ease-in-out transition-all z-99"
-            )}
-          >
+          <div className="fixed w-full bottom-0 ease-in-out transition-all z-99">
             <MediaPlayer
               name={currentSong.title}
               image={currentSong.cover_url}
               src={`https://api.cloudwavproduction.com/api/songs/${currentSong.id}/stream`}
-              // src={music}
               canvas={canvas}
               circle={circle}
               setMiniPlayer={setMiniPlayer}
@@ -105,6 +157,7 @@ export function MediaPlayerHome() {
     )
   );
 }
+
 function MediaPlayer({
   name,
   image,
@@ -135,6 +188,7 @@ function MediaPlayer({
   const [volumeLevel, setVolumeLevel] = useState<number>(100);
   const [showVolumeBar, setShowVolumeBar] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
   const [target, setTarget] = useState({
     width: 0,
     offsetLeft: 0,
@@ -243,17 +297,21 @@ function MediaPlayer({
   }
 
   const forwardTo = contextSafe(() => {
-    // animation
+    // Enhanced animation
     gsap.from(".forward-to .wrapper", {
       left: -24,
+      duration: 0.3,
+      ease: "power2.out"
     });
     jumpTo(15);
   });
 
   const BackTo = contextSafe(() => {
-    // animation
+    // Enhanced animation
     gsap.from(".back-to .wrapper", {
       left: 0,
+      duration: 0.3,
+      ease: "power2.out"
     });
     jumpTo(-15);
   });
@@ -281,6 +339,8 @@ function MediaPlayer({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       gsap.to(e.currentTarget, {
         rotate: loop ? 360 : 0,
+        duration: 0.5,
+        ease: "power2.out"
       });
       setLoop((prev) => !prev);
     }
@@ -304,6 +364,7 @@ function MediaPlayer({
 
     visualizeData();
   };
+  
   const visualizeData = () => {
     if (!audioAnalyzer.current || !audioRef.current || !canvas.current) return;
 
@@ -334,17 +395,35 @@ function MediaPlayer({
       let x = 0;
       const barWidth = canvas.current.width / bufferLength;
 
-      // Scale circle
+      // Enhanced circle scaling with smooth animation
       if (circle.current) {
-        circle.current.style.scale = `${
-          dataArray.reduce((a, c) => a + c, 0) / bufferLength / 118
-        }`;
+        const scale = 1 + (dataArray.reduce((a, c) => a + c, 0) / bufferLength / 200);
+        circle.current.style.transform = `scale(${scale})`;
       }
 
-      // Draw bars
+      // Enhanced bars with custom gradient colors
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = dataArray[i];
-        ctx.fillStyle = `#362d55`;
+        const gradient = ctx.createLinearGradient(0, canvas.current.height - barHeight, 0, canvas.current.height);
+        
+        // Create gradient from #5626D5 to #30B797
+        const progress = i / bufferLength;
+        const r1 = parseInt('#5626D5'.slice(1, 3), 16);
+        const g1 = parseInt('#5626D5'.slice(3, 5), 16);
+        const b1 = parseInt('#5626D5'.slice(5, 7), 16);
+        
+        const r2 = parseInt('#30B797'.slice(1, 3), 16);
+        const g2 = parseInt('#30B797'.slice(3, 5), 16);
+        const b2 = parseInt('#30B797'.slice(5, 7), 16);
+        
+        const r = Math.round(r1 + (r2 - r1) * progress);
+        const g = Math.round(g1 + (g2 - g1) * progress);
+        const b = Math.round(b1 + (b2 - b1) * progress);
+        
+        gradient.addColorStop(0, `rgb(${r}, ${g}, ${b})`);
+        gradient.addColorStop(1, `rgb(${Math.round(r * 0.7)}, ${Math.round(g * 0.7)}, ${Math.round(b * 0.7)})`);
+        
+        ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.current.height - barHeight, barWidth, barHeight);
         x += barWidth + 2;
       }
@@ -359,71 +438,102 @@ function MediaPlayer({
     (e: React.MouseEvent<HTMLButtonElement>) => {
       gsap.to(e.currentTarget, {
         rotate: miniPlayer ? 180 : 0,
-        color: miniPlayer ? "inherit" : "white",
+        duration: 0.5,
+        ease: "power2.out"
       });
       setMiniPlayer((prev) => !prev);
     }
   );
 
+  const handleLike = contextSafe((e: React.MouseEvent<HTMLButtonElement>) => {
+    gsap.to(e.currentTarget, {
+      scale: 1.2,
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out"
+    });
+    setIsLiked((prev) => !prev);
+  });
+
   return (
     <>
+      {/* Enhanced Player Container */}
       <div
-        className="bg-[#362d55] h-20 flex-center py-5 text-[#aaa9bd] z-999 px-10 shadow-2xl"
+        className="bg-gradient-to-r from-[#5626D5]/95 via-[#30B797]/95 to-[#5626D5]/95 backdrop-blur-xl h-24 flex-center py-6 text-white z-999 px-6 shadow-2xl border-t border-white/10"
         ref={container}
       >
-        <div className="logo w-10 h-10 overflow-hidden rounded">
+        {/* Album Art */}
+        <div className="relative w-14 h-14 overflow-hidden rounded-xl shadow-lg border-2 border-white/20">
           <img src={image} className="object-cover aspect-square" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
 
-        {/* player */}
-        <div className="flex-center gap-3 ml-5">
-          <button onClick={BackTo} className="back-to">
-            <span className="relative block w-6 h-6 overflow-hidden">
-              <span className="wrapper flex relative -left-6">
-                <span>
+        {/* Song Info */}
+        <div className="ml-4 flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-white truncate">{name}</h3>
+          <p className="text-xs text-white/70 truncate">{currentSong?.artist || 'Unknown Artist'}</p>
+        </div>
+
+        {/* Enhanced Player Controls */}
+        <div className="flex-center gap-4 mx-6">
+          {/* Previous Button */}
+          <button 
+            onClick={BackTo} 
+            className="back-to group relative w-8 h-8 flex-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+          >
+            <span className="relative block w-5 h-5 overflow-hidden">
+              <span className="wrapper flex relative -left-5">
+                <span className="text-white/80 group-hover:text-white transition-colors">
                   <RiSkipBackLine />
                 </span>
-                <span>
+                <span className="text-white/80 group-hover:text-white transition-colors">
                   <RiSkipBackLine />
                 </span>
               </span>
             </span>
           </button>
 
-          <button onClick={togglePlay} className="relative w-6 h-6">
-            {/* play */}
+          {/* Play/Pause Button */}
+          <button 
+            onClick={togglePlay} 
+            className="relative w-12 h-12 flex-center rounded-full bg-gradient-to-r from-[#5626D5] to-[#30B797] hover:from-[#4A1FB8] hover:to-[#2A9B7F] transition-all duration-300 hover:scale-110 shadow-lg"
+          >
             {!loading ? (
               <>
                 <span
                   className={clsx(
-                    "block absolute inset-0 scale-0 transition-all ",
+                    "block absolute inset-0 scale-0 transition-all duration-300 flex-center",
                     !isPlaying && "scale-100"
                   )}
                 >
-                  <RiPlayLine />
+                  <RiPlayLine className="text-white text-lg ml-0.5" />
                 </span>
-                {/* paused */}
                 <span
                   className={clsx(
-                    "block absolute inset-0 scale-0 transition-all",
+                    "block absolute inset-0 scale-0 transition-all duration-300 flex-center",
                     isPlaying && "scale-100"
                   )}
                 >
-                  <RiPauseLine />
+                  <RiPauseLine className="text-white text-lg" />
                 </span>
               </>
             ) : (
-              <Spinner2 w={4} h={4} b="black" />
+              <Spinner2 w={6} h={6} b="white" />
             )}
           </button>
 
-          <button onClick={forwardTo} className="forward-to">
-            <span className="relative block w-6 h-6 overflow-hidden">
+          {/* Next Button */}
+          <button 
+            onClick={forwardTo} 
+            className="forward-to group relative w-8 h-8 flex-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+          >
+            <span className="relative block w-5 h-5 overflow-hidden">
               <span className="wrapper flex relative left-0">
-                <span>
+                <span className="text-white/80 group-hover:text-white transition-colors">
                   <RiSkipForwardLine />
                 </span>
-                <span>
+                <span className="text-white/80 group-hover:text-white transition-colors">
                   <RiSkipForwardLine />
                 </span>
               </span>
@@ -431,110 +541,140 @@ function MediaPlayer({
           </button>
         </div>
 
-        {/* time line */}
-        <div className="time-line mx-5 flex-1 ">
-          {/* name */}
-          <p className="text-xs text-white">{name}</p>
-          {/* line */}
+        {/* Enhanced Progress Bar */}
+        <div className="flex-1 mx-6">
+          {/* Song Title */}
+          <p className="text-xs text-white/90 mb-1 truncate">{name}</p>
+          
+          {/* Progress Line */}
           <div
-            className="line relative before:z-10 w-full before:w-full before:h-[calc(100%+5px)] before:inset-0 before:absolute select-none group"
+            className="line relative before:z-10 w-full before:w-full before:h-[calc(100%+8px)] before:inset-0 before:absolute select-none group cursor-pointer"
             onMouseDown={handleMouseDown}
           >
-            <div className="path bg-[#6c658c] h-1 rounded-full my-2 relative group-hover:h-3 transition-all">
+            <div className="path bg-white/20 h-1.5 rounded-full my-2 relative group-hover:h-2 transition-all duration-300">
               <div
                 style={{ width: `${(currentTime / duration) * 100}%` }}
                 className={clsx(
-                  "absolute bg-green-500 inset-0 rounded-full transition-all ease-out"
+                  "absolute bg-gradient-to-r from-[#5626D5] to-[#30B797] inset-0 rounded-full transition-all ease-out shadow-sm"
                 )}
                 ref={dragElement}
               >
-                <div className="transition-all absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-green-500 border-3 border-white -right-3 group-hover:w-5 group-hover:h-5 " />
+                <div className="transition-all absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-[#5626D5] -right-3 group-hover:w-4 group-hover:h-4 shadow-lg" />
               </div>
             </div>
           </div>
 
-          {/*  duration  */}
-          <div className="flex items-center justify-between">
-            {/* durationTime */}
-            <p className=" text-xs">
-              <span>{durationHour && durationHour + " :"}</span>
-              <span>{durationMinute}</span> :<span>{durationSeconde}</span>
-            </p>
-            {/* currentTime */}
-            <p className=" text-xs">
-              <span>{currentHour && currentHour + " :"}</span>
-              <span>{currentMinute}</span> :<span>{currentSeconde}</span>
-            </p>
+          {/* Time Display */}
+          <div className="flex items-center justify-between text-xs text-white/70">
+            <span>
+              {currentHour && currentHour + ":"}
+              {currentMinute}:{currentSeconde}
+            </span>
+            <span>
+              {durationHour && durationHour + ":"}
+              {durationMinute}:{durationSeconde}
+            </span>
           </div>
         </div>
 
-        {/* other action  */}
+        {/* Enhanced Action Buttons */}
+        <div className="flex-center gap-3">
+          {/* Like Button */}
+          <button
+            onClick={handleLike}
+            className={clsx(
+              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110",
+              isLiked 
+                ? "bg-gradient-to-r from-red-500 to-pink-500 text-white" 
+                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+            )}
+          >
+            {isLiked ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
+          </button>
 
-        <div className="flex-center gap-3 mt-4 flex-wrap">
-          {/* repeat icon */}
+          {/* Loop Button */}
           <button
             onClick={handleLoopMusic}
             className={clsx(
-              "transition-colors cursor-pointer rotate-360",
-              loop && "text-white"
+              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110",
+              loop 
+                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white" 
+                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
             )}
           >
-            <RiLoopRightLine size={17} />
+            <RiLoopRightLine size={16} />
           </button>
 
-          {/* audio volume */}
+          {/* Volume Button */}
           <button
             className={clsx(
-              "flex-center cursor-pointer relative w-6 h-6 transition-colors",
-              showVolumeBar && "text-white"
+              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110 relative",
+              showVolumeBar 
+                ? "bg-gradient-to-r from-[#5626D5] to-[#30B797] text-white" 
+                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
             )}
             onClick={handleShowVolumeBar}
           >
             <span
               className={clsx(
-                "block absolute scale-0 transition-all",
+                "block absolute scale-0 transition-all duration-300",
                 volumeLevel > 50 && "scale-100"
               )}
             >
-              <RiVolumeUpLine />
+              <RiVolumeUpLine size={16} />
             </span>
             <span
               className={clsx(
-                "block absolute scale-0 transition-all",
+                "block absolute scale-0 transition-all duration-300",
                 volumeLevel <= 50 && volumeLevel > 0 && "scale-100"
               )}
             >
-              <RiVolumeDownLine />
+              <RiVolumeDownLine size={16} />
             </span>
             <span
               className={clsx(
-                "block absolute scale-0 transition-all",
+                "block absolute scale-0 transition-all duration-300",
                 volumeLevel === 0 && "scale-100"
               )}
             >
-              <RiVolumeMuteLine />
+              <RiVolumeMuteLine size={16} />
             </span>
           </button>
 
-          {/* miniPlayer */}
-          <button className="cursor-pointer" onClick={handleMiniPlayer}>
-            <RiArrowDownLine />
+          {/* Share Button */}
+          <button className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110">
+            <RiShareLine size={16} />
           </button>
 
-          {/* close player */}
+          {/* More Options */}
+          <button className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110">
+            <RiMoreLine size={16} />
+          </button>
+
+          {/* Mini Player Toggle */}
+          <button 
+            className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110" 
+            onClick={handleMiniPlayer}
+          >
+            <RiArrowDownLine size={16} />
+          </button>
+
+          {/* Close Player */}
           <button
-            className="cursor-pointer"
+            className="w-8 h-8 flex-center rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all duration-300 hover:scale-110"
             onClick={() => setCurrentSong(null)}
           >
-            <RiCloseLine />
+            <RiCloseLine size={16} />
           </button>
-          {/* volume Level */}
+
+          {/* Enhanced Volume Controller */}
           <VolumeController
             setVolumeLevel={setVolumeLevel}
             showVolumeBar={showVolumeBar}
           />
         </div>
       </div>
+      
       <audio
         src={src}
         ref={audioRef}
@@ -593,19 +733,22 @@ function VolumeController({
     });
     setDragging(true);
   }
+  
   return (
     <div
       className={clsx(
-        "w-1 rounded-full h-1 bg-[#6c658c] w-full relative before:w-full before:h-full before:absolute scale-75 opacity-0 transition-all hover:h-3 group",
-        showVolumeBar && "scale-100 opacity-100"
+        "w-16 h-1 rounded-full bg-white/20 relative transition-all duration-300 group cursor-pointer",
+        showVolumeBar && "opacity-100 scale-100",
+        !showVolumeBar && "opacity-0 scale-75 pointer-events-none"
       )}
       onMouseDown={handleMouseDown}
     >
       <div
-        className="absolute h-full bottom-0 left-0 w-full bg-green-500 rounded-full "
+        className="absolute h-full bottom-0 left-0 bg-gradient-to-r from-[#5626D5] to-[#30B797] rounded-full transition-all duration-200"
         ref={element}
+        style={{ width: `${showVolumeBar ? 100 : 0}%` }}
       >
-        <div className="w-2 h-2 rounded-full absolute right-0 bg-green-500 top-1/2 -translate-y-1/2 border-2 border-white group-hover:w-3 group-hover:h-3 transition-all " />
+        <div className="w-3 h-3 rounded-full absolute right-0 bg-white top-1/2 -translate-y-1/2 border-2 border-[#5626D5] group-hover:w-4 group-hover:h-4 transition-all duration-200 shadow-lg" />
       </div>
     </div>
   );

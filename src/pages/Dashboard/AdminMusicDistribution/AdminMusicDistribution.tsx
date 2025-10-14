@@ -1,7 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { TableOfContent } from "../../../components/DashboardComponents/Table/Table";
 import { axiosServices } from "../../../utils/axios";
 import { useTranslation } from "react-i18next";
+import { RiDeleteBinLine } from "@remixicon/react";
+import { AxiosError } from "axios";
+import Swal from "sweetalert2";
+import { Spinner2 } from "../../../components/Spinner/Spinner";
 
 export default function AdminMusicDistribution() {
   const { t } = useTranslation();
@@ -15,6 +19,29 @@ export default function AdminMusicDistribution() {
     queryFn: () => axiosServices.get("/services/artist"),
     select: (data) => data.data,
   });
+
+  const { mutate: deleteService, isPending: isDeleting } = useMutation<
+    any,
+    AxiosError<Error>,
+    number
+  >({
+    mutationFn: (id) => axiosServices.delete(`/service-delete/${id}`),
+    onSuccess: (data) => {
+      Swal.fire(data.data.message || "Service deleted successfully", "", "success");
+      refetch();
+    },
+    onError: (error) => {
+      Swal.fire(error.response?.data.message || "Error deleting service", "", "error");
+    },
+  });
+
+  const actionsList = [
+    {
+      color: "red",
+      Icon: <RiDeleteBinLine />,
+      label: "delete",
+    },
+  ];
 
   return (
     <TableOfContent
@@ -60,10 +87,17 @@ export default function AdminMusicDistribution() {
         {
           label: t("dashboard.requestACreatorPage.options"),
           name: "data",
-          select: (e) => JSON.parse(e).options.map((el: string, index: number) => <p>{index + 1}- {el}</p>),
+          select: (e) => JSON.parse(e).options.map((el: string, index: number) => <p key={index}>{index + 1}- {el}</p>),
         },
       ]}
-      actions={[]}
+      actions={actionsList.map((el) => ({
+        action: isDeleting ? () => {} : (id) => deleteService(id),
+        Icon: (
+          <span className="w-10 h-10 flex items-center justify-center bg-red-200 text-red-600 rounded-full cursor-pointer hover:bg-red-300 transition-colors">
+            {isDeleting ? <Spinner2 w={10} h={10} /> : el.Icon}
+          </span>
+        ),
+      }))}
       acceptRoute=""
       dataBody={[...musicDistributions].reverse()}
       title={t("dashboard.navLinks.musicDistribution")}
