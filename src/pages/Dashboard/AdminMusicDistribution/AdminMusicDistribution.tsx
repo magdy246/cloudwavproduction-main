@@ -22,7 +22,7 @@ export default function AdminMusicDistribution() {
     select: (data) => data.data,
   });
 
-  const { mutate: deleteService, isPending: isDeleting } = useMutation<
+  const { mutate: deleteService } = useMutation<
     any,
     AxiosError<Error>,
     number

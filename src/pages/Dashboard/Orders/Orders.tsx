@@ -20,7 +20,7 @@ export default function Orders() {
     select: (data) => data.data,
   });
 
-  const { mutate: deleteOrder, isPending: deleting } = useMutation<
+  const { mutate: deleteOrder } = useMutation<
     any,
     AxiosError<Error>,
     number

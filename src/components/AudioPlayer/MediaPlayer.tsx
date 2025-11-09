@@ -26,7 +26,7 @@ import { Spinner2 } from "../Spinner/Spinner";
 export function MediaPlayerHome() {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const circle = useRef<HTMLDivElement | null>(null);
-  const { currentSong, setCurrentSong } = usePlayer();
+  const { currentSong, setCurrentSong, nextSong, previousSong } = usePlayer();
   const [miniPlayer, setMiniPlayer] = useState(true);
   const container = useRef<HTMLDivElement | null>(null);
   
@@ -149,6 +149,8 @@ export function MediaPlayerHome() {
               miniPlayer={miniPlayer}
               setCurrentSong={setCurrentSong}
               currentSong={currentSong}
+              nextSong={nextSong}
+              previousSong={previousSong}
             />
           </div>,
           document.body
@@ -168,6 +170,8 @@ function MediaPlayer({
   miniPlayer,
   setCurrentSong,
   currentSong,
+  nextSong,
+  previousSong,
 }: {
   name: string;
   image: string;
@@ -178,6 +182,8 @@ function MediaPlayer({
   miniPlayer: boolean;
   setCurrentSong: (val: null) => void;
   currentSong: any;
+  nextSong: () => void;
+  previousSong: () => void;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -303,7 +309,7 @@ function MediaPlayer({
       duration: 0.3,
       ease: "power2.out"
     });
-    jumpTo(15);
+    nextSong();
   });
 
   const BackTo = contextSafe(() => {
@@ -313,18 +319,12 @@ function MediaPlayer({
       duration: 0.3,
       ease: "power2.out"
     });
-    jumpTo(-15);
+    previousSong();
   });
 
   function seekTo(time: number) {
     if (audioRef.current) {
       audioRef.current.currentTime = time;
-    }
-  }
-
-  function jumpTo(time: number) {
-    if (audioRef.current) {
-      audioRef.current.currentTime += time;
     }
   }
 

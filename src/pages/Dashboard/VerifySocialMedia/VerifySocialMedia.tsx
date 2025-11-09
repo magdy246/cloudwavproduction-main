@@ -41,7 +41,7 @@ export default function VerifySocialMedia() {
     },
   });
 
-  const { mutate: remove, isPending: deleting } = useMutation<
+  const { mutate: remove } = useMutation<
     any,
     AxiosError<Error>,
     number
@@ -133,7 +133,7 @@ const actionsList = [
             ? (isPending ? () => {} : (id) => mutate({ id, status: el.status }))
             : (id) => remove(id),
           Icon: el.status 
-            ? (rowId) => (
+            ? () => (
                 <span
                   className={`w-10 h-10 flex items-center justify-center bg-${el.color}-200 text-black rounded-full cursor-pointer`}
                 >
