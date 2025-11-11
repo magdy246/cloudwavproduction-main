@@ -18,11 +18,17 @@ import { useTranslation } from "react-i18next";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { axiosServices } from "../../utils/axios";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import SelectField from "../../components/Form/SelectField/SelectField";
 import { Spinner2 } from "../../components/Spinner/Spinner";
+import {
+  uploadAudioToCloudinary,
+  uploadImageToCloudinary,
+  UploadProgress,
+  clearUploadState,
+} from "../../utils/cloudinaryUpload";
 
 // model
 
@@ -34,6 +40,11 @@ function Model({
   setOpen: (val: boolean) => void;
 }) {
   const { t } = useTranslation();
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const CLOUD_NAME = "dg0zyscka";
+  const UPLOAD_PRESET = "cloudwav";
 
   const schema = z.object({
     title: z.string({ message: t("validation.required") }).min(1),
@@ -53,28 +64,127 @@ function Model({
     resolver: zodResolver(schema),
   });
 
-  const { mutate, isPending } = useMutation<any, AxiosError<Error>, FormData>({
-    mutationKey: ["upload-artist"],
-    mutationFn: (data) =>
-      axiosServices.post("/albums", data, {
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const { mutate: saveAlbumToBackend, isPending: saving } = useMutation<
+    AxiosResponse<{ message: string }>,
+    AxiosError<{ error: string }>,
+    { title: string; coverUrl: string }
+  >({
+    mutationKey: ["upload-album"],
+    mutationFn: ({ title, coverUrl }) => {
+      const formData = new FormData();
+      formData.append("album_cover", coverUrl); // Cloudinary URL
+      formData.append("title", title);
+      
+      return axiosServices.post("/albums", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Uploaded successfully!");
       reset();
       setOpen(false);
+      setUploadProgress(null);
+      setIsUploading(false);
     },
-    onError: (err) => toast.error(err.response?.data.message),
+    onError: (err) => {
+      toast.error(err.response?.data?.error || "Error uploading album");
+      setUploadProgress(null);
+      setIsUploading(false);
+    },
   });
 
-  const onSubmit: SubmitHandler<TFields> = (data) => {
-    const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("album_cover", data.album_cover);
-    // formData.append("division", data.album_cover);
-    mutate(formData);
+  const onSubmit: SubmitHandler<TFields> = async (data) => {
+    try {
+      setIsUploading(true);
+      setUploadProgress({
+        loaded: 0,
+        total: data.album_cover.size,
+        percentage: 0,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 0,
+        totalChunks: 1,
+      });
+
+      abortControllerRef.current = new AbortController();
+
+      // Upload album cover image to Cloudinary
+      const coverResult = await uploadImageToCloudinary(data.album_cover, {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        folder: "cloudwav/covers",
+        onProgress: (progress) => {
+          setUploadProgress({
+            ...progress,
+            uploadedChunks: 1,
+            totalChunks: 1,
+          });
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      setIsUploading(false);
+      setUploadProgress({
+        loaded: data.album_cover.size,
+        total: data.album_cover.size,
+        percentage: 100,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 1,
+        totalChunks: 1,
+      });
+
+      // Save album to backend with Cloudinary URL
+      saveAlbumToBackend({
+        title: data.title,
+        coverUrl: coverResult.secure_url,
+      });
+    } catch (error: any) {
+      setIsUploading(false);
+      if (error.message === "Upload aborted") {
+        Swal.fire("Upload cancelled", "", "info");
+      } else {
+        Swal.fire(
+          "Error uploading album cover",
+          error.message || "Please try again",
+          "error"
+        );
+      }
+      setUploadProgress(null);
+    }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsUploading(false);
+    setUploadProgress(null);
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins}m ${secs}s`;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
   };
 
   return (
@@ -98,6 +208,7 @@ function Model({
             type="text"
             {...register("title")}
             className="w-full border rounded px-3 py-2"
+            disabled={isUploading || saving}
           />
           {!!errors.title && (
             <span className="error__message block mt-1  ">
@@ -117,6 +228,7 @@ function Model({
                 type="file"
                 accept="image/*"
                 onChange={(e) => field.onChange(e.target.files?.[0])}
+                disabled={isUploading || saving}
               />
             )}
           />
@@ -126,28 +238,125 @@ function Model({
             </span>
           )}
 
+          {/* Progress Bar */}
+          {uploadProgress && uploadProgress.percentage < 100 && (
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  Uploading cover image...
+                </span>
+                <span className="text-sm font-bold text-green-500">
+                  {uploadProgress.percentage}%
+                </span>
+              </div>
+              
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
+                  style={{ width: `${uploadProgress.percentage}%` }}
+                >
+                  {uploadProgress.percentage > 10 && (
+                    <span className="text-xs text-white font-medium">
+                      {uploadProgress.percentage}%
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Speed:</span>
+                  <span className="ml-1 font-medium">
+                    {uploadProgress.speed > 0
+                      ? `${uploadProgress.speed.toFixed(2)} MB/s`
+                      : "Calculating..."}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Uploaded:</span>
+                  <span className="ml-1 font-medium">
+                    {formatFileSize(uploadProgress.loaded)} / {formatFileSize(uploadProgress.total)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Time left:</span>
+                  <span className="ml-1 font-medium">
+                    {uploadProgress.timeRemaining > 0
+                      ? formatTime(uploadProgress.timeRemaining)
+                      : "Calculating..."}
+                  </span>
+                </div>
+              </div>
+
+              {isUploading && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="mt-2 w-full py-2 text-sm text-red-400 hover:text-red-300 font-medium border border-red-500 rounded-md hover:bg-red-50 transition-colors"
+                >
+                  Cancel Upload
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Success State */}
+          {uploadProgress && uploadProgress.percentage === 100 && !saving && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-500 rounded-md">
+              <div className="flex items-center gap-2 text-green-600">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="font-medium">Upload complete! Saving to database...</span>
+              </div>
+            </div>
+          )}
+
           {/* submit button */}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                if (isUploading && abortControllerRef.current) {
+                  abortControllerRef.current.abort();
+                }
+                setOpen(false);
+                setIsUploading(false);
+                setUploadProgress(null);
+              }}
               className="px-4 py-2 bg-gray-300 rounded"
-              disabled={isPending}
+              disabled={isUploading && !saving}
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isUploading || saving}
               className={clsx(
-                "px-4 py-2 bg-green-600 text-white rounded flex items-center justify-center",
-                isPending
+                "px-4 py-2 bg-green-600 text-white rounded flex items-center justify-center gap-2",
+                (isUploading || saving)
                   ? "opacity-70 cursor-not-allowed"
                   : "hover:bg-green-700"
               )}
             >
-              {isPending ? "saving..." : "save"}
+              {isUploading ? (
+                <>
+                  <Spinner2 w={4} h={4} b={"white"} />
+                  <span>Uploading...</span>
+                </>
+              ) : saving ? (
+                <>
+                  <Spinner2 w={4} h={4} b={"white"} />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>
@@ -270,6 +479,12 @@ function FinalStep({
     state: string;
     path: undefined | string;
   }>({ state: "", path: "" });
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const CLOUD_NAME = "dg0zyscka";
+  const UPLOAD_PRESET = "cloudwav";
+
   const schema = z.object({
     cover_path: z.instanceof(File, { message: t("validation.required") }),
     title: z.string({ message: t("validation.required") }).min(1),
@@ -287,32 +502,161 @@ function FinalStep({
   } = useForm<TField>({
     resolver: zodResolver(schema),
   });
-  const { mutate, isPending } = useMutation<
-    any,
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins}m ${secs}s`;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  };
+
+  const { mutate: saveSongToBackend, isPending: saving } = useMutation<
+    AxiosResponse<{ message: string }>,
     AxiosError<{ error: string }>,
-    FormData
+    { title: string; songUrl: string; coverUrl: string; division: string }
   >({
     mutationKey: ["upload-song"],
-    mutationFn: (data) =>
-      axiosServices.post("/songs/upload", data, {
+    mutationFn: ({ title, songUrl, coverUrl, division }) => {
+      const formData = new FormData();
+      formData.append("song_url", songUrl); // Cloudinary URL
+      formData.append("cover_url", coverUrl); // Cloudinary URL
+      formData.append("division", division);
+      formData.append("title", title);
+      
+      return axiosServices.post("/songs/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Uploaded successfully!");
       setStep((prev) => prev - 1);
+      setUploadProgress(null);
+      setIsUploading(false);
+      if (uploadFile) {
+        clearUploadState(uploadFile);
+      }
     },
-    onError: (err) => Swal.fire("Error", err.response?.data.error, "error"),
+    onError: (err) => {
+      Swal.fire("Error", err.response?.data.error || "Error saving song", "error");
+      setUploadProgress(null);
+      setIsUploading(false);
+    },
   });
 
-  const onSubmit: SubmitHandler<TField> = (data) => {
-    const formData = new FormData();
-    formData.append("song_path", uploadFile!);
-    formData.append("cover_path", data.cover_path);
-    formData.append("division", data.genre);
-    formData.append("title", data.title);
-    mutate(formData);
+  const onSubmit: SubmitHandler<TField> = async (data) => {
+    if (!uploadFile) {
+      toast.error("Please select a song file");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const totalSize = uploadFile.size + data.cover_path.size;
+      setUploadProgress({
+        loaded: 0,
+        total: totalSize,
+        percentage: 0,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 0,
+        totalChunks: 2,
+      });
+
+      abortControllerRef.current = new AbortController();
+
+      // Upload song to Cloudinary
+      const songResult = await uploadAudioToCloudinary(uploadFile, {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        folder: "cloudwav/songs",
+        onProgress: (progress) => {
+          setUploadProgress({
+            ...progress,
+            total: totalSize,
+            uploadedChunks: 1,
+            totalChunks: 2,
+          });
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      // Upload cover image to Cloudinary
+      const coverResult = await uploadImageToCloudinary(data.cover_path, {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        folder: "cloudwav/covers",
+        onProgress: (progress) => {
+          const songProgress = songResult.bytes;
+          const coverProgress = progress.loaded;
+          setUploadProgress({
+            loaded: songProgress + coverProgress,
+            total: totalSize,
+            percentage: Math.round(((songProgress + coverProgress) / totalSize) * 100),
+            speed: progress.speed,
+            timeRemaining: progress.timeRemaining,
+            uploadedChunks: 2,
+            totalChunks: 2,
+          });
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      setIsUploading(false);
+      setUploadProgress({
+        loaded: totalSize,
+        total: totalSize,
+        percentage: 100,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 2,
+        totalChunks: 2,
+      });
+
+      saveSongToBackend({
+        title: data.title,
+        songUrl: songResult.secure_url,
+        coverUrl: coverResult.secure_url,
+        division: data.genre,
+      });
+    } catch (error: any) {
+      setIsUploading(false);
+      if (error.message === "Upload aborted") {
+        Swal.fire("Upload cancelled", "", "info");
+      } else {
+        Swal.fire(
+          "Error uploading song",
+          error.message || "Please try again",
+          "error"
+        );
+      }
+      setUploadProgress(null);
+    }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsUploading(false);
+    setUploadProgress(null);
   };
   const image_cover = watch("cover_path");
   useEffect(() => {
@@ -459,12 +803,96 @@ function FinalStep({
                 </span>
               )}
             </div>
+
+            {/* Progress Bar */}
+            {uploadProgress && uploadProgress.percentage < 100 && (
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-white">
+                    Uploading {uploadProgress.uploadedChunks}/{uploadProgress.totalChunks} chunks
+                  </span>
+                  <span className="text-sm font-bold text-green-500">
+                    {uploadProgress.percentage}%
+                  </span>
+                </div>
+                
+                <div className="w-full bg-gray-600 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
+                    style={{ width: `${uploadProgress.percentage}%` }}
+                  >
+                    {uploadProgress.percentage > 10 && (
+                      <span className="text-xs text-white font-medium">
+                        {uploadProgress.percentage}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-xs text-white">
+                  <div>
+                    <span className="text-gray-300">Speed:</span>
+                    <span className="ml-1 font-medium">
+                      {uploadProgress.speed > 0
+                        ? `${uploadProgress.speed.toFixed(2)} MB/s`
+                        : "Calculating..."}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-300">Uploaded:</span>
+                    <span className="ml-1 font-medium">
+                      {formatFileSize(uploadProgress.loaded)} / {formatFileSize(uploadProgress.total)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-300">Time left:</span>
+                    <span className="ml-1 font-medium">
+                      {uploadProgress.timeRemaining > 0
+                        ? formatTime(uploadProgress.timeRemaining)
+                        : "Calculating..."}
+                    </span>
+                  </div>
+                </div>
+
+                {isUploading && (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="mt-2 w-full py-2 text-sm text-red-400 hover:text-red-300 font-medium border border-red-500 rounded-md hover:bg-red-900/20 transition-colors"
+                  >
+                    Cancel Upload
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Success State */}
+            {uploadProgress && uploadProgress.percentage === 100 && !saving && (
+              <div className="mt-4 p-3 bg-green-900/30 border border-green-500 rounded-md">
+                <div className="flex items-center gap-2 text-green-400">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="font-medium">Upload complete! Saving to database...</span>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleSubmit(onSubmit)}
               className="bg-green-500 text-white w-35 rounded-full h-11 flex-center ml-auto mt-4 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isPending}
+              disabled={isUploading || saving}
             >
-              {isPending ? (
+              {isUploading ? (
+                <div className="flex items-center gap-2">
+                  <Spinner2 w={6} h={6} b={"black"} />
+                  <span>Uploading...</span>
+                </div>
+              ) : saving ? (
                 <Spinner2 w={6} h={6} b={"black"} />
               ) : (
                 <>

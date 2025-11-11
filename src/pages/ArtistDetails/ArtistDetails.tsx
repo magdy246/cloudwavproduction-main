@@ -61,6 +61,18 @@ const ArtistDetails = () => {
   const auth = useAuth();
   const { setCurrentSong } = usePlayer();
 
+  // Utility function to clean malformed URLs
+  const cleanUrl = (url: string | undefined): string => {
+    if (!url) return "";
+    // Check if URL has the API base URL prepended to Cloudinary URL
+    const apiBasePattern = /https:\/\/api\.cloudwavproduction\.com\/storage\/https:\/\//;
+    if (apiBasePattern.test(url)) {
+      // Extract the Cloudinary URL part
+      return url.replace("https://api.cloudwavproduction.com/storage/", "");
+    }
+    return url;
+  };
+
   const {
     data: artist = [],
     isFetching,
@@ -68,7 +80,26 @@ const ArtistDetails = () => {
   } = useQuery({
     queryKey: ["artist", id],
     queryFn: () => axiosServices.get("/Artists/" + id),
-    select: (data) => data?.data,
+    select: (data) => {
+      if (!data?.data) return data?.data;
+      
+      // Clean URLs in the response
+      const cleanedData = {
+        ...data.data,
+        songs: data.data.songs?.map((song: any) => ({
+          ...song,
+          cover_path: cleanUrl(song.cover_path),
+          song_path: cleanUrl(song.song_path),
+          song_url: cleanUrl(song.song_path || song.song_url), // Use song_path or song_url
+        })) || [],
+        albums: data.data.albums?.map((album: any) => ({
+          ...album,
+          album_cover: cleanUrl(album.album_cover),
+        })) || [],
+      };
+      
+      return cleanedData;
+    },
   });
 
   const { mutate: deleteSong, isPending: isDeleting } = useMutation<
@@ -144,7 +175,17 @@ const ArtistDetails = () => {
                       role="button"
                       key={song.id}
                       className="shrink-0 pl-2 cursor-pointer relative z-0 "
-                      onClick={() => setCurrentSong(song)}
+                      onClick={() => setCurrentSong({
+                        id: song.id,
+                        title: song.title,
+                        artist: artist.name || 'Unknown Artist',
+                        cover_url: song.cover_path || song.cover_url || '',
+                        cover_path: song.cover_path || song.cover_url || '',
+                        // Use song_url from cleaned data, fallback to song_path
+                        audio_url: song.song_url || song.song_path || song.audio_url || '',
+                        debug_path: song.debug_path || '',
+                        likes_count: song.likes_count || null,
+                      })}
                     >
                       <div className="w-full h-40 rounded overflow-hidden  flex-center">
                         <ImageComponent

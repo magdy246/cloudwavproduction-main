@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RiDeleteBinLine, RiLoader2Line, RiUploadLine } from "@remixicon/react";
 
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState, useRef } from "react";
 // import { getImagePath } from "../../utils/functions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -16,8 +16,9 @@ import { useAuth } from "../../Providers/AuthContext";
 import NoResultFound from "../../components/NoResultFound/NoResultFound";
 import { RiMusic2Line } from "@remixicon/react";
 import Dialog from "../../components/Dialog/Dialog";
+import { getImagePath } from "../../utils/functions";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import Swal from "sweetalert2";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,12 +26,23 @@ import { Spinner2 } from "../../components/Spinner/Spinner";
 import TextField from "../../components/Form/TextField/TextField";
 import { useTranslation } from "react-i18next";
 import SelectField from "../../components/Form/SelectField/SelectField";
+import {
+  uploadAudioToCloudinary,
+  uploadImageToCloudinary,
+  UploadProgress,
+  clearUploadState,
+} from "../../utils/cloudinaryUpload";
 
 function AlbumSong({
   song,
   i,
 }: {
-  song: TTrendingSong & { cover_image: string };
+  song: TTrendingSong & { 
+    cover_image: string;
+    song_url?: string;
+    artist_name?: string;
+    isLiked?: boolean;
+  };
   i: number;
 }) {
   const { setCurrentSong } = usePlayer();
@@ -101,13 +113,21 @@ function AlbumSong({
           <div>
             <button
               onClick={() =>
-                setCurrentSong({ ...song, cover_url: song.cover_image })
+                setCurrentSong({
+                  ...song,
+                  cover_url: song.cover_image || song.cover_url || '',
+                  cover_path: song.cover_image || song.cover_path || '',
+                  // Map song_url to audio_url for player
+                  audio_url: song.song_url || song.audio_url || '',
+                  artist: song.artist_name || song.artist || 'Unknown Artist',
+                  isLiked: song.isLiked || false,
+                } as any)
               }
               className="font-bold text-2xl cursor-pointer text-green-500"
             >
               {song.title}
             </button>
-            <p className="font-normal text-[18px]">{song.artist}</p>
+            <p className="font-normal text-[18px]">{song.artist_name || song.artist}</p>
           </div>
         </div>
 
@@ -147,6 +167,15 @@ export default function AlbumDetails() {
   const [albumData, setAlbumData] = useState<null | TAlbum>(null);
   const navigate = useNavigate();
   const auth = useAuth();
+  // Utility function to convert relative path to full URL
+  const getFullImageUrl = (path: string | undefined): string => {
+    if (!path) return "";
+    // If it's already a full URL (starts with http), return as is
+    if (path.startsWith("http")) return path;
+    // If it's a relative path, convert to full URL
+    return getImagePath(path);
+  };
+
   const {
     data: album = { songs: [], album: {} },
     isFetching,
@@ -154,7 +183,32 @@ export default function AlbumDetails() {
   } = useQuery({
     queryKey: ["album", id],
     queryFn: () => axiosServices.get("/albums/" + id),
-    select: (data) => data?.data,
+    select: (data) => {
+      if (!data?.data) return data?.data;
+      
+      // Process album data
+      const processedAlbum = {
+        ...data.data.album,
+        album_cover: getFullImageUrl(data.data.album?.album_cover),
+      };
+      
+      // Process songs data
+      const processedSongs = data.data.songs?.map((song: any) => ({
+        ...song,
+        cover_url: song.cover_image || song.cover_url || '',
+        cover_path: song.cover_image || song.cover_path || '',
+        // Map song_url to audio_url for player compatibility
+        audio_url: song.song_url || song.audio_url || '',
+        // Map artist_name to artist if needed
+        artist: song.artist_name || song.artist || 'Unknown Artist',
+        isLiked: song.isLiked || false,
+      })) || [];
+      
+      return {
+        album: processedAlbum,
+        songs: processedSongs,
+      };
+    },
   });
 
   const { mutate: deleteAlbum, isPending: isDeletingAlbum } = useMutation<
@@ -433,6 +487,12 @@ function UploadSongToAlbum({
   setAlbumId: Dispatch<SetStateAction<number | null>>;
 }) {
   const { t } = useTranslation();
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const CLOUD_NAME = "dg0zyscka";
+  const UPLOAD_PRESET = "cloudwav";
+
   const options = [
     { id: 1, name: "Rap" },
     { id: 2, name: "pop" },
@@ -454,25 +514,39 @@ function UploadSongToAlbum({
   });
   type TFields = z.infer<typeof schema>;
 
-  const { mutate: uploadAlbumSong, isPending: uploading } = useMutation<
-    any,
+  const { mutate: saveSongToBackend, isPending: saving } = useMutation<
+    AxiosResponse<{ message: string }>,
     AxiosError<Error>,
-    FormData
+    { title: string; songUrl: string; coverUrl: string; division: string; albumId: number }
   >({
-    mutationFn: (data) =>
-      axiosServices.post(`albums/${albumId}/songs`, data, {
+    mutationFn: ({ title, songUrl, coverUrl, division, albumId }) => {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("song_url", songUrl); // Cloudinary URL
+      formData.append("cover_url", coverUrl); // Cloudinary URL
+      formData.append("division", division);
+      
+      return axiosServices.post(`albums/${albumId}/songs`, formData, {
         headers: {
-          "Content-Type": "multipart/from-data",
+          "Content-Type": "multipart/form-data",
         },
-      }),
+      });
+    },
     onSuccess: (data) => {
       Swal.fire(data.data.message, "", "success");
       reset();
       refetch();
       setAlbumId(null);
+      setUploadProgress(null);
+      setIsUploading(false);
+      if (watch("file")) {
+        clearUploadState(watch("file")!);
+      }
     },
     onError: (error) => {
-      Swal.fire(error.response?.data.message, "", "error");
+      Swal.fire(error.response?.data.message || "Error saving song", "", "error");
+      setUploadProgress(null);
+      setIsUploading(false);
     },
   });
 
@@ -486,20 +560,138 @@ function UploadSongToAlbum({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit: SubmitHandler<TFields> = (data) => {
-    const formData = new FormData();
-    formData.append("title", data.title);
-    formData.append("cover_image", data.cover_image);
-    formData.append("file", data.file);
-    formData.append("division", data.division);
-    uploadAlbumSong(formData);
+  // Cleanup on unmount or dialog close
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins}m ${secs}s`;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  };
+
+  const onSubmit: SubmitHandler<TFields> = async (data) => {
+    try {
+      setIsUploading(true);
+      const totalSize = data.file.size + data.cover_image.size;
+      setUploadProgress({
+        loaded: 0,
+        total: totalSize,
+        percentage: 0,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 0,
+        totalChunks: 2,
+      });
+
+      // Create abort controller for cancellation
+      abortControllerRef.current = new AbortController();
+
+      // Upload song to Cloudinary
+      const songResult = await uploadAudioToCloudinary(data.file, {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        folder: "cloudwav/songs",
+        onProgress: (progress) => {
+          setUploadProgress({
+            ...progress,
+            total: totalSize,
+            uploadedChunks: 1,
+            totalChunks: 2,
+          });
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      // Upload cover image to Cloudinary
+      const coverResult = await uploadImageToCloudinary(data.cover_image, {
+        cloudName: CLOUD_NAME,
+        uploadPreset: UPLOAD_PRESET,
+        folder: "cloudwav/covers",
+        onProgress: (progress) => {
+          const songProgress = songResult.bytes;
+          const coverProgress = progress.loaded;
+          setUploadProgress({
+            loaded: songProgress + coverProgress,
+            total: totalSize,
+            percentage: Math.round(((songProgress + coverProgress) / totalSize) * 100),
+            speed: progress.speed,
+            timeRemaining: progress.timeRemaining,
+            uploadedChunks: 2,
+            totalChunks: 2,
+          });
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      // Upload complete
+      setUploadProgress({
+        loaded: totalSize,
+        total: totalSize,
+        percentage: 100,
+        speed: 0,
+        timeRemaining: 0,
+        uploadedChunks: 2,
+        totalChunks: 2,
+      });
+
+      setIsUploading(false);
+      saveSongToBackend({
+        title: data.title,
+        songUrl: songResult.secure_url,
+        coverUrl: coverResult.secure_url,
+        division: data.division,
+        albumId: albumId!,
+      });
+    } catch (error: any) {
+      setIsUploading(false);
+      if (error.message === "Upload aborted") {
+        Swal.fire("Upload cancelled", "", "info");
+      } else {
+        Swal.fire(
+          "Error uploading song",
+          error.message || "Please try again",
+          "error"
+        );
+      }
+      setUploadProgress(null);
+    }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsUploading(false);
+    setUploadProgress(null);
   };
   return (
     <Dialog
       open={!!albumId}
       handleClose={() => {
+        if (isUploading && abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
         reset();
         setAlbumId(null);
+        setUploadProgress(null);
+        setIsUploading(false);
+        if (watch("file")) {
+          clearUploadState(watch("file")!);
+        }
       }}
       title="upload Album Song"
     >
@@ -604,12 +796,109 @@ function UploadSongToAlbum({
             {errors.file.message}
           </span>
         )}
+
+        {/* File Info */}
+        {watch("file") && !isUploading && (
+          <div className="mt-3 p-3 bg-gray-50 rounded-md">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600">File size:</span>
+              <span className="font-medium">{formatFileSize(watch("file")!.size)}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Enhanced Progress Bar */}
+        {uploadProgress && uploadProgress.percentage < 100 && (
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">
+                Uploading {uploadProgress.uploadedChunks}/{uploadProgress.totalChunks} chunks
+              </span>
+              <span className="text-sm font-bold text-purple-600">
+                {uploadProgress.percentage}%
+              </span>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
+                style={{ width: `${uploadProgress.percentage}%` }}
+              >
+                {uploadProgress.percentage > 10 && (
+                  <span className="text-xs text-white font-medium">
+                    {uploadProgress.percentage}%
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <span className="text-gray-500">Speed:</span>
+                <span className="ml-1 font-medium text-gray-700">
+                  {uploadProgress.speed > 0
+                    ? `${uploadProgress.speed.toFixed(2)} MB/s`
+                    : "Calculating..."}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">Uploaded:</span>
+                <span className="ml-1 font-medium text-gray-700">
+                  {formatFileSize(uploadProgress.loaded)} / {formatFileSize(uploadProgress.total)}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">Time left:</span>
+                <span className="ml-1 font-medium text-gray-700">
+                  {uploadProgress.timeRemaining > 0
+                    ? formatTime(uploadProgress.timeRemaining)
+                    : "Calculating..."}
+                </span>
+              </div>
+            </div>
+
+            {isUploading && (
+              <button
+                onClick={handleCancel}
+                className="mt-2 w-full py-2 text-sm text-red-600 hover:text-red-700 font-medium border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+              >
+                Cancel Upload
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Success State */}
+        {uploadProgress && uploadProgress.percentage === 100 && !saving && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+            <div className="flex items-center gap-2 text-green-700">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-medium">Upload complete! Saving to database...</span>
+            </div>
+          </div>
+        )}
+
         <button
           className="submit__button"
-          disabled={uploading}
+          disabled={isUploading || saving}
           onClick={handleSubmit(onSubmit)}
         >
-          {uploading ? <Spinner2 w={6} h={6} /> : "Submit"}
+          {isUploading ? (
+            <div className="flex items-center gap-2">
+              <Spinner2 w={6} h={6} />
+              <span>Uploading...</span>
+            </div>
+          ) : saving ? (
+            <Spinner2 w={6} h={6} />
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
     </Dialog>

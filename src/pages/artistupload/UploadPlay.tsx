@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 // Replace with your actual image paths
 import songIcon from "../../assets/images/joinUsImage/karaokeFill.svg";
 import albumIcon from "../../assets/images/joinUsImage/singingFill.png";
 import { axiosServices } from "../../utils/axios";
+import {
+  uploadAudioToCloudinary,
+  uploadImageToCloudinary,
+  UploadProgress,
+  clearUploadState,
+} from "../../utils/cloudinaryUpload";
+import { Spinner2 } from "../../components/Spinner/Spinner";
 
 type UploadType = "song" | "album";
 
@@ -13,6 +21,9 @@ export default function UploadTypeSelector() {
   const [selectedType, setSelectedType] = useState<UploadType | "">("");
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     song_path: null as File | null,
@@ -20,34 +31,114 @@ export default function UploadTypeSelector() {
     album_cover: null as File | null,
   });
 
+  const CLOUD_NAME = "dg0zyscka";
+  const UPLOAD_PRESET = "cloudwav";
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins}m ${secs}s`;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  };
+
   const handleSubmit = async () => {
-    setIsLoading(true);
-    const data = new FormData();
-    data.append("title", formData.title);
-    
-    if (selectedType === "song") {
-      if (formData.song_path) data.append("song_path", formData.song_path);
-      if (formData.cover_path) data.append("cover_path", formData.cover_path);
-    } else {
-      if (formData.album_cover)
-        data.append("album_cover", formData.album_cover);
+    if (selectedType === "song" && !formData.song_path) {
+      toast.error("Please select a song file");
+      return;
     }
 
     try {
+      setIsLoading(true);
+      
       if (selectedType === "song") {
+        // Upload song to Cloudinary
+        setIsUploading(true);
+        setUploadProgress({
+          loaded: 0,
+          total: formData.song_path!.size,
+          percentage: 0,
+          speed: 0,
+          timeRemaining: 0,
+          uploadedChunks: 0,
+          totalChunks: 1,
+        });
+
+        abortControllerRef.current = new AbortController();
+
+        const result = await uploadAudioToCloudinary(formData.song_path!, {
+          cloudName: CLOUD_NAME,
+          uploadPreset: UPLOAD_PRESET,
+          folder: "cloudwav/songs",
+          onProgress: (progress) => {
+            setUploadProgress(progress);
+          },
+          signal: abortControllerRef.current.signal,
+        });
+
+        setIsUploading(false);
+        setUploadProgress({
+          loaded: result.bytes,
+          total: result.bytes,
+          percentage: 100,
+          speed: 0,
+          timeRemaining: 0,
+          uploadedChunks: 1,
+          totalChunks: 1,
+        });
+
+        // Upload cover image to Cloudinary if provided
+        let coverUrl = "";
+        if (formData.cover_path) {
+          const coverResult = await uploadImageToCloudinary(formData.cover_path, {
+            cloudName: CLOUD_NAME,
+            uploadPreset: UPLOAD_PRESET,
+            folder: "cloudwav/covers",
+            signal: abortControllerRef.current.signal,
+          });
+          coverUrl = coverResult.secure_url;
+        }
+
+        // Send to backend
+        const data = new FormData();
+        data.append("title", formData.title);
+        data.append("song_url", result.secure_url); // Cloudinary URL
+        if (coverUrl) data.append("cover_url", coverUrl); // Cloudinary URL
+
         await axiosServices.post("/songs/upload", data, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log("data", data);
       } else {
+        // Album upload (no audio file, just cover)
+        const data = new FormData();
+        data.append("title", formData.title);
+        if (formData.album_cover)
+          data.append("album_cover", formData.album_cover);
+
         await axiosServices.post("/albums", data, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
+      
       toast.success("Uploaded successfully!");
       setShowModal(false);
       setFormData({
@@ -56,12 +147,30 @@ export default function UploadTypeSelector() {
         cover_path: null,
         album_cover: null,
       });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Upload failed!");
+      setUploadProgress(null);
+      setIsUploading(false);
+      if (formData.song_path) {
+        clearUploadState(formData.song_path);
+      }
+    } catch (error: any) {
+      setIsUploading(false);
+      setUploadProgress(null);
+      if (error.message === "Upload aborted") {
+        Swal.fire("Upload cancelled", "", "info");
+      } else {
+        toast.error(error.message || "Upload failed!");
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsUploading(false);
+    setUploadProgress(null);
   };
 
   const options = [
@@ -209,24 +318,118 @@ export default function UploadTypeSelector() {
                   />
                 </div>
               )}
+
+              {/* Progress Bar for Song Upload */}
+              {selectedType === "song" && uploadProgress && uploadProgress.percentage < 100 && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      Uploading {uploadProgress.uploadedChunks}/{uploadProgress.totalChunks} chunks
+                    </span>
+                    <span className="text-sm font-bold text-purple-600">
+                      {uploadProgress.percentage}%
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
+                      style={{ width: `${uploadProgress.percentage}%` }}
+                    >
+                      {uploadProgress.percentage > 10 && (
+                        <span className="text-xs text-white font-medium">
+                          {uploadProgress.percentage}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <span className="text-gray-500">Speed:</span>
+                      <span className="ml-1 font-medium text-gray-700">
+                        {uploadProgress.speed > 0
+                          ? `${uploadProgress.speed.toFixed(2)} MB/s`
+                          : "Calculating..."}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Uploaded:</span>
+                      <span className="ml-1 font-medium text-gray-700">
+                        {formatFileSize(uploadProgress.loaded)} / {formatFileSize(uploadProgress.total)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Time left:</span>
+                      <span className="ml-1 font-medium text-gray-700">
+                        {uploadProgress.timeRemaining > 0
+                          ? formatTime(uploadProgress.timeRemaining)
+                          : "Calculating..."}
+                      </span>
+                    </div>
+                  </div>
+
+                  {isUploading && (
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="mt-2 w-full py-2 text-sm text-red-600 hover:text-red-700 font-medium border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                    >
+                      Cancel Upload
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Success State */}
+              {selectedType === "song" && uploadProgress && uploadProgress.percentage === 100 && !isLoading && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="font-medium">Upload complete! Saving to database...</span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-2 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    if (isUploading && abortControllerRef.current) {
+                      abortControllerRef.current.abort();
+                    }
+                    setShowModal(false);
+                    setUploadProgress(null);
+                    setIsUploading(false);
+                    if (formData.song_path) {
+                      clearUploadState(formData.song_path);
+                    }
+                  }}
                   className="px-4 py-2 bg-gray-300 rounded"
-                  disabled={isLoading}
+                  disabled={isLoading && !isUploading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
                   className={clsx(
                     "px-4 py-2 bg-green-600 text-white rounded flex items-center justify-center",
-                    isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
+                    (isLoading || isUploading) ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
                   )}
                 >
-                  {isLoading ? (
+                  {isUploading ? (
+                    <>
+                      <Spinner2 w={4} h={4} />
+                      <span className="ml-2">Uploading...</span>
+                    </>
+                  ) : isLoading ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

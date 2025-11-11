@@ -32,10 +32,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [playlist, setPlaylist] = useState<TTrendingSong[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
 
-  // Fetch all songs when currentSong changes to build playlist
+  // Fetch all songs when currentSong changes to build playlist (non-blocking)
   useEffect(() => {
     if (currentSong) {
-      // Fetch all songs to build playlist
+      // Fetch all songs to build playlist in background (non-blocking)
+      // This doesn't prevent the song from playing immediately
       axiosServices.get("/Songs")
         .then((response) => {
           const songs = response.data || [];
@@ -46,7 +47,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             artist: song.artist_name || song.artist || 'Unknown Artist',
             cover_url: song.cover_url || song.cover_path || '',
             cover_path: song.cover_path || song.cover_url || '',
-            audio_url: song.audio_url || '',
+            // Use song_url from API response, fallback to audio_url for backward compatibility
+            audio_url: song.song_url || song.audio_url || '',
             debug_path: song.debug_path || '',
             likes_count: song.likes_count || null,
           }));

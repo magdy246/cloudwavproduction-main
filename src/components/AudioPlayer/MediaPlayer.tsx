@@ -12,8 +12,6 @@ import {
   RiVolumeUpLine,
   RiHeartLine,
   RiHeartFill,
-  RiShareLine,
-  RiMoreLine,
 } from "@remixicon/react";
 import clsx from "clsx";
 import { useGSAP } from "@gsap/react";
@@ -22,6 +20,10 @@ import { formatTime } from "../../utils/functions";
 import { usePlayer } from "../../Context/PlayerContext";
 import { createPortal } from "react-dom";
 import { Spinner2 } from "../Spinner/Spinner";
+import { useMutation } from "@tanstack/react-query";
+import { axiosServices } from "../../utils/axios";
+import { AxiosError, AxiosResponse } from "axios";
+import { toast } from "react-toastify";
 
 export function MediaPlayerHome() {
   const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -142,7 +144,7 @@ export function MediaPlayerHome() {
             <MediaPlayer
               name={currentSong.title}
               image={currentSong.cover_url}
-              src={`https://api.cloudwavproduction.com/api/songs/${currentSong.id}/stream`}
+              src={currentSong.audio_url || `https://api.cloudwavproduction.com/api/songs/${currentSong.id}/stream`}
               canvas={canvas}
               circle={circle}
               setMiniPlayer={setMiniPlayer}
@@ -205,6 +207,35 @@ function MediaPlayer({
   const audioSource = useRef<MediaElementAudioSourceNode | null>(null);
   const audioAnalyzer = useRef<AnalyserNode | null>(null);
 
+  // Like mutation
+  interface TLikeResponse {
+    isLiked: boolean;
+    likesCount: number;
+  }
+
+  const { mutate: toggleLike, isPending: isLiking } = useMutation<
+    AxiosResponse<TLikeResponse>,
+    AxiosError<Error>,
+    number
+  >({
+    mutationKey: ["toggle-like", currentSong?.id],
+    mutationFn: (songId) => axiosServices.post(`/songs/${songId}/like`),
+    onSuccess: (data) => {
+      setIsLiked(data.data.isLiked);
+      // Update likes_count and isLiked in currentSong if available
+      if (currentSong) {
+        (currentSong as any).likes_count = data.data.likesCount;
+        (currentSong as any).isLiked = data.data.isLiked;
+      }
+      toast.success(
+        data.data.isLiked ? "Song liked!" : "Like removed"
+      );
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update like");
+    },
+  });
+
   const { contextSafe } = useGSAP({ scope: container });
 
   const {
@@ -246,14 +277,12 @@ function MediaPlayer({
     };
   }, [startDragging, duration, seekTo]);
 
-  // to loop the sound if end
+  // Set loop attribute on audio element
   useEffect(() => {
-    if (!loop) return;
-    if (currentTime >= duration) {
-      seekTo(0);
-      togglePlay();
+    if (audioRef.current) {
+      audioRef.current.loop = loop;
     }
-  }, [loop, duration, currentTime]);
+  }, [loop]);
 
   // volume update
   useEffect(() => {
@@ -274,6 +303,18 @@ function MediaPlayer({
     audioRef.current?.play();
     setIsPlaying(true);
   }, [src]);
+
+  // Update isLiked state when currentSong changes
+  useEffect(() => {
+    if (currentSong) {
+      // Initialize like state from song data if available
+      // Check if currentSong has isLiked property (from API response)
+      const songWithLike = currentSong as any;
+      setIsLiked(songWithLike.isLiked || false);
+    } else {
+      setIsLiked(false);
+    }
+  }, [currentSong?.id]);
 
   // loading if move to point not load
   useEffect(() => {
@@ -446,6 +487,8 @@ function MediaPlayer({
   );
 
   const handleLike = contextSafe((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!currentSong?.id) return;
+    
     gsap.to(e.currentTarget, {
       scale: 1.2,
       duration: 0.2,
@@ -453,42 +496,48 @@ function MediaPlayer({
       repeat: 1,
       ease: "power2.out"
     });
-    setIsLiked((prev) => !prev);
+    
+    // Call the API to toggle like
+    toggleLike(currentSong.id);
   });
 
   return (
     <>
       {/* Enhanced Player Container */}
       <div
-        className="bg-gradient-to-r from-[#5626D5]/95 via-[#30B797]/95 to-[#5626D5]/95 backdrop-blur-xl h-24 flex-center py-6 text-white z-999 px-6 shadow-2xl border-t border-white/10"
+        className="bg-gradient-to-r from-[#5626D5]/95 via-[#30B797]/95 to-[#5626D5]/95 backdrop-blur-xl h-28 flex items-center text-white z-999 px-4 md:px-8 shadow-2xl border-t border-white/10"
         ref={container}
       >
-        {/* Album Art */}
-        <div className="relative w-14 h-14 overflow-hidden rounded-xl shadow-lg border-2 border-white/20">
-          <img src={image} className="object-cover aspect-square" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        {/* Left Section: Album Art & Song Info */}
+        <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
+          {/* Album Art */}
+          <div className="relative w-16 h-16 overflow-hidden rounded-xl shadow-lg border-2 border-white/20 flex-shrink-0">
+            <img src={image} className="w-full h-full object-cover" alt={name} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
+
+          {/* Song Info */}
+          <div className="min-w-0 flex-1 hidden sm:block">
+            <h3 className="text-sm font-semibold text-white truncate">{name}</h3>
+            <p className="text-xs text-white/70 truncate">{currentSong?.artist || 'Unknown Artist'}</p>
+          </div>
         </div>
 
-        {/* Song Info */}
-        <div className="ml-4 flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate">{name}</h3>
-          <p className="text-xs text-white/70 truncate">{currentSong?.artist || 'Unknown Artist'}</p>
-        </div>
-
-        {/* Enhanced Player Controls */}
-        <div className="flex-center gap-4 mx-6">
+        {/* Center Section: Player Controls */}
+        <div className="flex items-center justify-center gap-3 mx-4 flex-shrink-0">
           {/* Previous Button */}
           <button 
             onClick={BackTo} 
-            className="back-to group relative w-8 h-8 flex-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+            className="back-to group relative w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95"
+            aria-label="Previous song"
           >
             <span className="relative block w-5 h-5 overflow-hidden">
               <span className="wrapper flex relative -left-5">
                 <span className="text-white/80 group-hover:text-white transition-colors">
-                  <RiSkipBackLine />
+                  <RiSkipBackLine size={18} />
                 </span>
                 <span className="text-white/80 group-hover:text-white transition-colors">
-                  <RiSkipBackLine />
+                  <RiSkipBackLine size={18} />
                 </span>
               </span>
             </span>
@@ -497,25 +546,26 @@ function MediaPlayer({
           {/* Play/Pause Button */}
           <button 
             onClick={togglePlay} 
-            className="relative w-12 h-12 flex-center rounded-full bg-gradient-to-r from-[#5626D5] to-[#30B797] hover:from-[#4A1FB8] hover:to-[#2A9B7F] transition-all duration-300 hover:scale-110 shadow-lg"
+            className="relative w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-r from-[#5626D5] to-[#30B797] hover:from-[#4A1FB8] hover:to-[#2A9B7F] transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl"
+            aria-label={isPlaying ? "Pause" : "Play"}
           >
             {!loading ? (
               <>
                 <span
                   className={clsx(
-                    "block absolute inset-0 scale-0 transition-all duration-300 flex-center",
+                    "absolute inset-0 scale-0 transition-all duration-300 flex items-center justify-center",
                     !isPlaying && "scale-100"
                   )}
                 >
-                  <RiPlayLine className="text-white text-lg ml-0.5" />
+                  <RiPlayLine className="text-white text-xl ml-0.5" />
                 </span>
                 <span
                   className={clsx(
-                    "block absolute inset-0 scale-0 transition-all duration-300 flex-center",
+                    "absolute inset-0 scale-0 transition-all duration-300 flex items-center justify-center",
                     isPlaying && "scale-100"
                   )}
                 >
-                  <RiPauseLine className="text-white text-lg" />
+                  <RiPauseLine className="text-white text-xl" />
                 </span>
               </>
             ) : (
@@ -526,26 +576,24 @@ function MediaPlayer({
           {/* Next Button */}
           <button 
             onClick={forwardTo} 
-            className="forward-to group relative w-8 h-8 flex-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+            className="forward-to group relative w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 active:scale-95"
+            aria-label="Next song"
           >
             <span className="relative block w-5 h-5 overflow-hidden">
               <span className="wrapper flex relative left-0">
                 <span className="text-white/80 group-hover:text-white transition-colors">
-                  <RiSkipForwardLine />
+                  <RiSkipForwardLine size={18} />
                 </span>
                 <span className="text-white/80 group-hover:text-white transition-colors">
-                  <RiSkipForwardLine />
+                  <RiSkipForwardLine size={18} />
                 </span>
               </span>
             </span>
           </button>
         </div>
 
-        {/* Enhanced Progress Bar */}
-        <div className="flex-1 mx-6">
-          {/* Song Title */}
-          <p className="text-xs text-white/90 mb-1 truncate">{name}</p>
-          
+        {/* Progress Bar Section */}
+        <div className="flex-1 mx-4 md:mx-6 min-w-0 hidden md:block">
           {/* Progress Line */}
           <div
             className="line relative before:z-10 w-full before:w-full before:h-[calc(100%+8px)] before:inset-0 before:absolute select-none group cursor-pointer"
@@ -553,10 +601,8 @@ function MediaPlayer({
           >
             <div className="path bg-white/20 h-1.5 rounded-full my-2 relative group-hover:h-2 transition-all duration-300">
               <div
-                style={{ width: `${(currentTime / duration) * 100}%` }}
-                className={clsx(
-                  "absolute bg-gradient-to-r from-[#5626D5] to-[#30B797] inset-0 rounded-full transition-all ease-out shadow-sm"
-                )}
+                style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                className="absolute bg-gradient-to-r from-[#5626D5] to-[#30B797] inset-0 rounded-full transition-all ease-out shadow-sm"
                 ref={dragElement}
               >
                 <div className="transition-all absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-[#5626D5] -right-3 group-hover:w-4 group-hover:h-4 shadow-lg" />
@@ -565,113 +611,121 @@ function MediaPlayer({
           </div>
 
           {/* Time Display */}
-          <div className="flex items-center justify-between text-xs text-white/70">
-            <span>
+          <div className="flex items-center justify-between text-xs text-white/70 mt-1">
+            <span className="font-mono">
               {currentHour && currentHour + ":"}
-              {currentMinute}:{currentSeconde}
+              {currentMinute}:{currentSeconde || "00"}
             </span>
-            <span>
+            <span className="font-mono">
               {durationHour && durationHour + ":"}
-              {durationMinute}:{durationSeconde}
+              {durationMinute}:{durationSeconde || "00"}
             </span>
           </div>
         </div>
 
-        {/* Enhanced Action Buttons */}
-        <div className="flex-center gap-3">
+        {/* Right Section: Action Buttons */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Like Button */}
           <button
             onClick={handleLike}
+            disabled={isLiking || !currentSong?.id}
             className={clsx(
-              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110",
+              "w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 active:scale-95",
               isLiked 
-                ? "bg-gradient-to-r from-red-500 to-pink-500 text-white" 
-                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+                ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg" 
+                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white",
+              (isLiking || !currentSong?.id) && "opacity-50 cursor-not-allowed"
             )}
+            aria-label={isLiked ? "Unlike" : "Like"}
           >
-            {isLiked ? <RiHeartFill size={16} /> : <RiHeartLine size={16} />}
+            {isLiking ? (
+              <Spinner2 w={4} h={4} b="white" />
+            ) : isLiked ? (
+              <RiHeartFill size={18} />
+            ) : (
+              <RiHeartLine size={18} />
+            )}
           </button>
 
           {/* Loop Button */}
           <button
             onClick={handleLoopMusic}
             className={clsx(
-              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110",
+              "w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 active:scale-95 relative",
               loop 
-                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white" 
+                ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg" 
                 : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
             )}
+            aria-label={loop ? "Disable repeat" : "Enable repeat"}
+            title={loop ? "Repeat: On" : "Repeat: Off"}
           >
-            <RiLoopRightLine size={16} />
-          </button>
-
-          {/* Volume Button */}
-          <button
-            className={clsx(
-              "w-8 h-8 flex-center rounded-full transition-all duration-300 hover:scale-110 relative",
-              showVolumeBar 
-                ? "bg-gradient-to-r from-[#5626D5] to-[#30B797] text-white" 
-                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+            <RiLoopRightLine size={18} className={loop ? "opacity-100" : "opacity-70"} />
+            {loop && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-pulse" />
             )}
-            onClick={handleShowVolumeBar}
-          >
-            <span
-              className={clsx(
-                "block absolute scale-0 transition-all duration-300",
-                volumeLevel > 50 && "scale-100"
-              )}
-            >
-              <RiVolumeUpLine size={16} />
-            </span>
-            <span
-              className={clsx(
-                "block absolute scale-0 transition-all duration-300",
-                volumeLevel <= 50 && volumeLevel > 0 && "scale-100"
-              )}
-            >
-              <RiVolumeDownLine size={16} />
-            </span>
-            <span
-              className={clsx(
-                "block absolute scale-0 transition-all duration-300",
-                volumeLevel === 0 && "scale-100"
-              )}
-            >
-              <RiVolumeMuteLine size={16} />
-            </span>
           </button>
 
-          {/* Share Button */}
-          <button className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110">
-            <RiShareLine size={16} />
-          </button>
-
-          {/* More Options */}
-          <button className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110">
-            <RiMoreLine size={16} />
-          </button>
+          {/* Volume Button with Controller */}
+          <div className="flex items-center gap-2">
+            <button
+              className={clsx(
+                "w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 active:scale-95 relative",
+                showVolumeBar 
+                  ? "bg-gradient-to-r from-[#5626D5] to-[#30B797] text-white shadow-lg" 
+                  : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+              )}
+              onClick={handleShowVolumeBar}
+              aria-label="Volume control"
+            >
+              <span
+                className={clsx(
+                  "block absolute scale-0 transition-all duration-300",
+                  volumeLevel > 50 && "scale-100"
+                )}
+              >
+                <RiVolumeUpLine size={18} />
+              </span>
+              <span
+                className={clsx(
+                  "block absolute scale-0 transition-all duration-300",
+                  volumeLevel <= 50 && volumeLevel > 0 && "scale-100"
+                )}
+              >
+                <RiVolumeDownLine size={18} />
+              </span>
+              <span
+                className={clsx(
+                  "block absolute scale-0 transition-all duration-300",
+                  volumeLevel === 0 && "scale-100"
+                )}
+              >
+                <RiVolumeMuteLine size={18} />
+              </span>
+            </button>
+            <VolumeController
+              setVolumeLevel={setVolumeLevel}
+              showVolumeBar={showVolumeBar}
+              volumeLevel={volumeLevel}
+            />
+          </div>
 
           {/* Mini Player Toggle */}
           <button 
-            className="w-8 h-8 flex-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110" 
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300 hover:scale-110 active:scale-95" 
             onClick={handleMiniPlayer}
+            aria-label="Toggle mini player"
           >
-            <RiArrowDownLine size={16} />
+            <RiArrowDownLine size={18} />
           </button>
 
           {/* Close Player */}
           <button
-            className="w-8 h-8 flex-center rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all duration-300 hover:scale-110"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all duration-300 hover:scale-110 active:scale-95"
             onClick={() => setCurrentSong(null)}
+            aria-label="Close player"
           >
-            <RiCloseLine size={16} />
+            <RiCloseLine size={18} />
           </button>
-
-          {/* Enhanced Volume Controller */}
-          <VolumeController
-            setVolumeLevel={setVolumeLevel}
-            showVolumeBar={showVolumeBar}
-          />
         </div>
       </div>
       
@@ -680,8 +734,14 @@ function MediaPlayer({
         ref={audioRef}
         controls={false}
         hidden={true}
+        loop={loop}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onEnded={() => {
+          if (!loop) {
+            nextSong();
+          }
+        }}
         crossOrigin="anonymous"
       />
     </>
@@ -691,9 +751,11 @@ function MediaPlayer({
 function VolumeController({
   setVolumeLevel,
   showVolumeBar,
+  volumeLevel,
 }: {
   setVolumeLevel: (val: number) => void;
   showVolumeBar: boolean;
+  volumeLevel: number;
 }) {
   const [dragging, setDragging] = useState<boolean>(false);
   const [target, setTarget] = useState({
@@ -734,19 +796,25 @@ function VolumeController({
     setDragging(true);
   }
   
+  useEffect(() => {
+    if (element.current) {
+      element.current.style.width = `${volumeLevel}%`;
+    }
+  }, [volumeLevel, showVolumeBar]);
+
   return (
     <div
       className={clsx(
-        "w-16 h-1 rounded-full bg-white/20 relative transition-all duration-300 group cursor-pointer",
+        "w-20 h-1.5 rounded-full bg-white/20 relative transition-all duration-300 group cursor-pointer",
         showVolumeBar && "opacity-100 scale-100",
-        !showVolumeBar && "opacity-0 scale-75 pointer-events-none"
+        !showVolumeBar && "opacity-0 scale-75 pointer-events-none w-0"
       )}
       onMouseDown={handleMouseDown}
     >
       <div
         className="absolute h-full bottom-0 left-0 bg-gradient-to-r from-[#5626D5] to-[#30B797] rounded-full transition-all duration-200"
         ref={element}
-        style={{ width: `${showVolumeBar ? 100 : 0}%` }}
+        style={{ width: `${volumeLevel}%` }}
       >
         <div className="w-3 h-3 rounded-full absolute right-0 bg-white top-1/2 -translate-y-1/2 border-2 border-[#5626D5] group-hover:w-4 group-hover:h-4 transition-all duration-200 shadow-lg" />
       </div>

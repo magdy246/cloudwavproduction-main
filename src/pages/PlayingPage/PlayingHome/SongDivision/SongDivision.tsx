@@ -1,6 +1,7 @@
 import {
   // RiDownload2Line,
   RiHeartFill,
+  RiHeartLine,
   RiImageLine,
   RiPlayLine,
   RiReplay10Line,
@@ -28,6 +29,7 @@ interface TTrendingSong {
   likes_count: null | number;
   title: string;
   cover_path: string;
+  isLiked?: boolean;
 }
 
 // interface TDownload {
@@ -36,7 +38,7 @@ interface TTrendingSong {
 
 interface TLiked {
   isLiked: boolean;
-  count: number;
+  likesCount: number;
 }
 
 export default function SongDivision() {
@@ -59,7 +61,16 @@ export default function SongDivision() {
     queryKey: [`division-songs-${genre}`],
     queryFn: () => axiosServices.get("/Songs"),
     select: (data) => {
-      return data?.data.filter((el:any) => el.division === genre);
+      return data?.data
+        .filter((el:any) => el.division === genre)
+        .map((song: any) => ({
+          ...song,
+          audio_url: song.song_url || song.audio_url || '',
+          artist: song.artist_name || song.artist || 'Unknown Artist',
+          cover_path: song.cover_path || song.cover_url || '',
+          debug_path: song.debug_path || '',
+          isLiked: song.isLiked || false,
+        }));
     },
   });
 
@@ -76,6 +87,7 @@ export default function SongDivision() {
         data.data.isLiked ? "Like added successfully" : "Like removed",
         "success"
       );
+      refetch();
     },
     onError: (error) => {
       setLikedSongId(null);
@@ -187,20 +199,21 @@ export default function SongDivision() {
                 {auth?.isLogin && (
                   <div className="actions-buttons flex items-center gap-3 mt-auto">
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setLikedSongId(list.id);
                         mutate(list.id);
                       }}
                       disabled={likedSongId === list.id && isLiking}
                       className="transition-transform hover:scale-110"
+                      title={list.isLiked ? "Unlike" : "Like"}
                     >
                       {likedSongId === list.id && isLiking ? (
                         <Spinner2 w={6} h={6} b="red" />
+                      ) : list.isLiked ? (
+                        <RiHeartFill size={30} color="#FF5B89" />
                       ) : (
-                        <RiHeartFill
-                          size={30}
-                          color={list.likes_count ? "#FF5B89" : "black"}
-                        />
+                        <RiHeartLine size={30} color="black" />
                       )}
                     </button>
                     <button className="transition-transform hover:scale-110">

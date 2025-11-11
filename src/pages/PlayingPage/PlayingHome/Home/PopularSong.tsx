@@ -3,10 +3,15 @@ import {
   // RiDownload2Line,
   RiImageLine,
   RiPlayLine,
+  RiHeartFill,
+  RiHeartLine,
   // RiReplay10Line,
 } from "@remixicon/react";
 
-import {  useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
+import { Spinner2 } from "../../../../components/Spinner/Spinner";
 import { axiosServices } from "../../../../utils/axios";
 import { ImageComponent } from "../../../../components/ImageComponent/ImageComponent";
 import SectionLoading from "../../../../components/SectionLoading/SectionLoading";
@@ -24,8 +29,10 @@ interface TPopularSong {
   title: string;
   cover_url: string;
   artist_name: string;
-  audio_url: string;
+  audio_url?: string;
+  song_url?: string;
   likes_count: null | number;
+  isLiked?: boolean;
 }
 
 // interface TDownload {
@@ -34,10 +41,15 @@ interface TPopularSong {
 
 
 
+interface TLiked {
+  isLiked: boolean;
+  likesCount: number;
+}
+
 export default function PopularSong() {
-  // const [likedSongId, setLikedSongId] = useState<number | null>(null);
+  const [likedSongId, setLikedSongId] = useState<number | null>(null);
   // const [downloadSongId, setDownloadSongId] = useState<null | number>(null);
-  const { Content } = useSnackbar();
+  const { Content, handleChange } = useSnackbar();
   const auth = useAuth();
   const { setCurrentSong, setPlayerVisible } = usePlayer();
   const { i18n } = useTranslation();
@@ -55,28 +67,33 @@ export default function PopularSong() {
   } = useQuery<any, any, TPopularSong[]>({
     queryKey: ["popular-song"],
     queryFn: () => axiosServices.get("/Songs"),
-    select: (data) => data?.data,
+    select: (data) => data?.data?.map((song: any) => ({
+      ...song,
+      isLiked: song.isLiked || false,
+    })),
   });
 
-  // const { mutate, isPending: isLiking } = useMutation<
-  //   AxiosResponse<TLiked>,
-  //   AxiosError<Error>,
-  //   number
-  // >({
-  //   mutationKey: ["add-like"],
-  //   mutationFn: (id) => axiosServices.post(`/songs/${id}/like`),
-  //   onSuccess: (data) => {
-  //     setLikedSongId(null);
-  //     handleChange(
-  //       data.data.isLiked ? "Like added successfully" : "Like removed",
-  //       "success"
-  //     );
-  //   },
-  //   onError: (error) => {
-  //     setLikedSongId(null);
-  //     handleChange(`Error: ${error.message}`, "error");
-  //   },
-  // });
+  const { mutate: toggleLike, isPending: isLiking } = useMutation<
+    AxiosResponse<TLiked>,
+    AxiosError<Error>,
+    number
+  >({
+    mutationKey: ["add-like"],
+    mutationFn: (id) => axiosServices.post(`/songs/${id}/like`),
+    onSuccess: (data) => {
+      setLikedSongId(null);
+      handleChange(
+        data.data.isLiked ? "Like added successfully" : "Like removed",
+        "success"
+      );
+      // Refetch to update the list
+      refetch();
+    },
+    onError: (error) => {
+      setLikedSongId(null);
+      handleChange(`Error: ${error.message}`, "error");
+    },
+  });
 
   // const { mutate: download, isPending: isDownloading } = useMutation<
   //   AxiosResponse<TDownload>,
@@ -107,10 +124,12 @@ export default function PopularSong() {
       title: song.title,
       artist: song.artist_name,
       cover_url: song.cover_url,
-      audio_url: song.audio_url,
+      // Use song_url from API response, fallback to audio_url for backward compatibility
+      audio_url: song.song_url || song.audio_url || '',
       likes_count: song.likes_count,
       debug_path: "", // Provide a default or meaningful value for debug_path
-    });
+      isLiked: song.isLiked || false, // Pass isLiked to player
+    } as any);
     setPlayerVisible(true);
   };
 
@@ -170,37 +189,24 @@ export default function PopularSong() {
 
           {auth?.isLogin && (
             <div className="actions-buttons flex items-center gap-3 mt-2 justify-center">
-              {/* <button
-                onClick={() => {
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
                   setLikedSongId(song.id);
-                  mutate(song.id);
+                  toggleLike(song.id);
                 }}
                 disabled={likedSongId === song.id && isLiking}
                 className="transition-transform hover:scale-110"
+                title={song.isLiked ? "Unlike" : "Like"}
               >
                 {likedSongId === song.id && isLiking ? (
                   <Spinner2 w={6} h={6} b="red" />
+                ) : song.isLiked ? (
+                  <RiHeartFill size={24} color="#FF5B89" />
                 ) : (
-                  <RiHeartFill
-                    size={24}
-                    color={song.likes_count ? "#FF5B89" : "black"}
-                  />
+                  <RiHeartLine size={24} color="black" />
                 )}
-              </button> */}
-              {/* <button
-                onClick={() => {
-                  setDownloadSongId(song.id);
-                  download(song.id);
-                }}
-                disabled={downloadSongId === song.id && isDownloading}
-                className="transition-transform hover:scale-110"
-              >
-                {downloadSongId === song.id && isDownloading ? (
-                  <Spinner2 w={6} h={6} b="red" />
-                ) : (
-                  <RiDownload2Line size={24} />
-                )}
-              </button> */}
+              </button>
               <button
                 onClick={() => playSongInBottomPlayer(song)}
                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"

@@ -349,3 +349,287 @@ export function clearUploadState(file: File): void {
   localStorage.removeItem(storageKey);
 }
 
+/**
+ * Upload audio file using Cloudinary's optimized upload endpoint
+ * Similar to video upload but for audio files
+ */
+async function uploadLargeAudioFile(
+  file: File,
+  options: UploadOptions
+): Promise<UploadResult> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", options.uploadPreset);
+    formData.append("resource_type", "auto"); // auto detects audio
+    
+    if (options.folder) {
+      formData.append("folder", options.folder);
+    }
+
+    // Optimize for large file uploads
+    formData.append("chunk_size", "6000000"); // 6MB chunks (Cloudinary's optimal)
+
+    const xhr = new XMLHttpRequest();
+    let startTime = Date.now();
+    let previousLoaded = 0;
+    let previousTime = startTime;
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable && options.onProgress) {
+        const currentTime = Date.now();
+        const { speed, timeRemaining } = calculateSpeed(
+          e.loaded,
+          e.total,
+          previousLoaded,
+          previousTime
+        );
+
+        // Simulate chunk progress for large files
+        const estimatedChunks = Math.ceil(e.total / (6 * 1024 * 1024)); // 6MB chunks
+        const currentChunk = Math.ceil((e.loaded / e.total) * estimatedChunks);
+
+        options.onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percentage: Math.round((e.loaded / e.total) * 100),
+          speed,
+          timeRemaining,
+          uploadedChunks: currentChunk,
+          totalChunks: estimatedChunks,
+        });
+
+        previousLoaded = e.loaded;
+        previousTime = currentTime;
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 200) {
+        try {
+          const result: UploadResult = JSON.parse(xhr.responseText);
+          resolve(result);
+        } catch (error) {
+          reject(new Error("Failed to parse upload response"));
+        }
+      } else {
+        try {
+          const error = JSON.parse(xhr.responseText);
+          reject(new Error(error.error?.message || `Upload failed: ${xhr.statusText}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload network error"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload aborted"));
+    });
+
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        xhr.abort();
+      });
+    }
+
+    // Cloudinary automatically handles large files through the standard upload endpoint
+    const endpoint = `https://api.cloudinary.com/v1_1/${options.cloudName}/auto/upload`;
+
+    xhr.open("POST", endpoint);
+    xhr.send(formData);
+  });
+}
+
+/**
+ * Upload audio file using standard single upload (for small files)
+ */
+async function uploadStandardAudio(
+  file: File,
+  options: UploadOptions
+): Promise<UploadResult> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", options.uploadPreset);
+    formData.append("resource_type", "auto"); // auto detects audio
+    
+    if (options.folder) {
+      formData.append("folder", options.folder);
+    }
+
+    let startTime = Date.now();
+    let previousLoaded = 0;
+    let previousTime = startTime;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable && options.onProgress) {
+        const currentTime = Date.now();
+        const { speed, timeRemaining } = calculateSpeed(
+          e.loaded,
+          e.total,
+          previousLoaded,
+          previousTime
+        );
+
+        options.onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percentage: Math.round((e.loaded / e.total) * 100),
+          speed,
+          timeRemaining,
+          uploadedChunks: 1,
+          totalChunks: 1,
+        });
+
+        previousLoaded = e.loaded;
+        previousTime = currentTime;
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 200) {
+        try {
+          const result: UploadResult = JSON.parse(xhr.responseText);
+          resolve(result);
+        } catch (error) {
+          reject(new Error("Failed to parse upload response"));
+        }
+      } else {
+        try {
+          const error = JSON.parse(xhr.responseText);
+          reject(new Error(error.error?.message || `Upload failed: ${xhr.statusText}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload network error"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload aborted"));
+    });
+
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        xhr.abort();
+      });
+    }
+
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${options.cloudName}/auto/upload`);
+    xhr.send(formData);
+  });
+}
+
+/**
+ * Main audio upload function with automatic optimization for large files
+ * Cloudinary automatically handles chunking server-side for large files
+ */
+export async function uploadAudioToCloudinary(
+  file: File,
+  options: UploadOptions
+): Promise<UploadResult> {
+  // Use optimized large file upload for files > 50MB
+  // Cloudinary handles chunking automatically on their end
+  const useLargeUpload = file.size > 50 * 1024 * 1024;
+
+  if (useLargeUpload) {
+    return uploadLargeAudioFile(file, options);
+  } else {
+    return uploadStandardAudio(file, options);
+  }
+}
+
+/**
+ * Upload image file to Cloudinary
+ */
+export async function uploadImageToCloudinary(
+  file: File,
+  options: UploadOptions
+): Promise<UploadResult> {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", options.uploadPreset);
+    formData.append("resource_type", "image");
+    
+    if (options.folder) {
+      formData.append("folder", options.folder);
+    }
+
+    let startTime = Date.now();
+    let previousLoaded = 0;
+    let previousTime = startTime;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable && options.onProgress) {
+        const currentTime = Date.now();
+        const { speed, timeRemaining } = calculateSpeed(
+          e.loaded,
+          e.total,
+          previousLoaded,
+          previousTime
+        );
+
+        options.onProgress({
+          loaded: e.loaded,
+          total: e.total,
+          percentage: Math.round((e.loaded / e.total) * 100),
+          speed,
+          timeRemaining,
+          uploadedChunks: 1,
+          totalChunks: 1,
+        });
+
+        previousLoaded = e.loaded;
+        previousTime = currentTime;
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 200) {
+        try {
+          const result: UploadResult = JSON.parse(xhr.responseText);
+          resolve(result);
+        } catch (error) {
+          reject(new Error("Failed to parse upload response"));
+        }
+      } else {
+        try {
+          const error = JSON.parse(xhr.responseText);
+          reject(new Error(error.error?.message || `Upload failed: ${xhr.statusText}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload network error"));
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload aborted"));
+    });
+
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        xhr.abort();
+      });
+    }
+
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${options.cloudName}/image/upload`);
+    xhr.send(formData);
+  });
+}
+
