@@ -6,9 +6,10 @@ import { useNavigate } from "react-router-dom";
 import useSnackbar from "../../components/Snackbar/Snackbar";
 import { AxiosError } from "axios";
 import { useAuth } from "../../Providers/AuthContext";
-import { RiArrowRightLine } from "@remixicon/react";
+import { RiArrowRightLine, RiAlertLine } from "@remixicon/react";
 import { Spinner2 } from "../../components/Spinner/Spinner";
 import ProtectRoute from "../../utils/ProtectRoute";
+import { useTranslation } from "react-i18next";
 
 type TCredential = {
   birthDate: string;
@@ -31,6 +32,7 @@ interface TReuslt {
 export default function VerifiedEmail() {
   const [otpNumber, setOtpNumber] = useState<string>("");
   const auth = useAuth();
+  const { t, i18n } = useTranslation();
 
   const credential: TCredential = JSON.parse(
     localStorage.getItem("credential") || "{}"
@@ -96,6 +98,32 @@ export default function VerifiedEmail() {
               <br /> enter code to verify and continuous{" "}
             </p>
           </div>
+          
+          {/* Spam Alert */}
+          <div className={clsx(
+            "mt-4 mb-4 p-4 rounded-lg border-2 border-amber-200 shadow-sm",
+            i18n.dir() === "rtl" 
+              ? "bg-gradient-to-l from-amber-50 to-orange-50 text-right" 
+              : "bg-gradient-to-r from-amber-50 to-orange-50 text-left"
+          )}>
+            <div className={clsx(
+              "flex items-start gap-3",
+              i18n.dir() === "rtl" && "flex-row-reverse"
+            )}>
+              <div className="flex-shrink-0 mt-0.5">
+                <RiAlertLine className="text-amber-600" size={20} />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-semibold text-amber-900 text-sm mb-1">
+                  {t("changeEmail.spamAlertTitle")}
+                </h5>
+                <p className="text-amber-800 text-xs leading-relaxed">
+                  {t("changeEmail.spamAlertMessage")}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="inputs relative w-fit mx-auto">
             <div className="flex-center mt-8 ">
               {Array(6)

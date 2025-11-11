@@ -1,4 +1,4 @@
-import { RiMailFill, RiPhoneFill, RiCheckFill } from "@remixicon/react";
+import { RiMailFill, RiPhoneFill, RiCheckFill, RiAlertLine } from "@remixicon/react";
 import { Controller, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import TextField from "../../components/Form/TextField/TextField";
@@ -22,7 +22,7 @@ import HCaptchaComponent, { HCaptchaRef } from "../../components/HCaptcha/HCaptc
 
 function OtpVerified({ email }: { email: string }) {
   const [otp, setOtp] = useState<string[]>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const schema = z.object({
     email: z
@@ -101,6 +101,31 @@ function OtpVerified({ email }: { email: string }) {
         Enter the OTP sent to your email
       </p>
 
+      {/* Spam Alert */}
+      <div className={clsx(
+        "mb-6 p-4 rounded-lg border-2 border-amber-200 shadow-sm",
+        i18n.dir() === "rtl" 
+          ? "bg-gradient-to-l from-amber-50 to-orange-50 text-right" 
+          : "bg-gradient-to-r from-amber-50 to-orange-50 text-left"
+      )}>
+        <div className={clsx(
+          "flex items-start gap-3",
+          i18n.dir() === "rtl" && "flex-row-reverse"
+        )}>
+          <div className="flex-shrink-0 mt-0.5">
+            <RiAlertLine className="text-amber-600" size={20} />
+          </div>
+          <div className="flex-1">
+            <h5 className="font-semibold text-amber-900 text-sm mb-1">
+              {t("changeEmail.spamAlertTitle")}
+            </h5>
+            <p className="text-amber-800 text-xs leading-relaxed">
+              {t("changeEmail.spamAlertMessage")}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex gap-4 mb-6 relative">
         {Array(6)
           .fill("")
@@ -167,6 +192,7 @@ function OtpVerified({ email }: { email: string }) {
 }
 export default function ForgetPassword() {
   const auth = useAuth();
+  const { t, i18n } = useTranslation();
   const carousel = useRef<HTMLDivElement | null>(null);
   const [steps, setSteps] = useState<number>(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);

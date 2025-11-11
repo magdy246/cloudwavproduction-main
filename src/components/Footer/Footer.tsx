@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
     ],
     contact: [
       // { name: t("hotel_reservation"), value: "123-456-7890", href: "tel:1234567890" },
-      { name: t("office"), value: "+201055030045", href: "tel:01055030045" },
+      { name: t("office"), value: "+201006695204", href: "tel:01055030045" },
     ],
     social: [
       { Logo: RiFacebookFill, href: "https://www.facebook.com/share/18i8rogaB7/?mibextid=qi2Omg" },
@@ -131,7 +131,7 @@ const Footer: React.FC = () => {
               <li className="mb-4">
                 <a href="http://wa.me/01055030045" className="flex items-center gap-2 hover:text-[#30B797] transition">
                   <span className="text-[16px]"><FaWhatsapp/></span>
-                  <span>+201055030045</span>
+                  <span>+201006695204</span>
                 </a>
               </li>
               <li className="mb-4">

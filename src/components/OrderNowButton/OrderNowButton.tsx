@@ -54,7 +54,7 @@ const OrderNowButton = ({ orderInfo }:any) => {
       name: "",
       email: "",
       number: "",
-      mas: "",
+      details: "",
     },
     validationSchema: Yup.object({
       name: Yup.string()
@@ -74,7 +74,7 @@ const OrderNowButton = ({ orderInfo }:any) => {
         )
         .required("Phone number is required"),
 
-      mas: Yup.string()
+      details: Yup.string()
         .min(10, "Must be at least 10 characters")
         .max(500, "Must not exceed 500 characters")
         .required("Description is required"),
@@ -96,7 +96,7 @@ const OrderNowButton = ({ orderInfo }:any) => {
         formData.append("order_email", values.email);
         formData.append("phone", fullPhoneNumber);
         formData.append("whatsapp", fullPhoneNumber);
-        formData.append("order_mas", values.mas);
+        formData.append("details", values.details);
         formData.append("order_type", orderInfo?.videoType);
         formData.append("order_artistName", orderInfo?.artistName);
         
@@ -297,7 +297,7 @@ const OrderNowButton = ({ orderInfo }:any) => {
 
                   <div className="mb-6">
                     <label
-                      htmlFor="mas"
+                      htmlFor="details"
                       className="block mb-2 text-sm font-medium text-[#522ED3]"
                     >
                       {t("Write_your_Text")}
@@ -305,14 +305,14 @@ const OrderNowButton = ({ orderInfo }:any) => {
                     <textarea
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      value={formik.values.mas}
-                      name="mas"
-                      id="mas"
+                      value={formik.values.details}
+                      name="details"
+                      id="details"
                       className="border rounded-xl border-[#522ED3] text-gray-900 text-sm outline-b focus-visible:outline-0 block w-full p-2.5 h-36 resize-y"
                       placeholder={t("Write_your_Text")}
                     />
-                    {formik.touched.mas && formik.errors.mas ? (
-                      <small className="text-red-500">{formik.errors.mas}</small>
+                    {formik.touched.details && formik.errors.details ? (
+                      <small className="text-red-500">{formik.errors.details}</small>
                     ) : null}
                   </div>
 
