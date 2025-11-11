@@ -192,7 +192,6 @@ function OtpVerified({ email }: { email: string }) {
 }
 export default function ForgetPassword() {
   const auth = useAuth();
-  const { t, i18n } = useTranslation();
   const carousel = useRef<HTMLDivElement | null>(null);
   const [steps, setSteps] = useState<number>(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
